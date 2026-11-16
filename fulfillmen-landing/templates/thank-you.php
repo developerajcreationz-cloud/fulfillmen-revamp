@@ -18,12 +18,12 @@ $cal = $o['calendar_url'];
 ?>
 <div class="fm-lp fm-ty" data-fm-lp>
 	<section class="fm-hero fm-ty__hero">
-		<div class="fm-hero__bg" aria-hidden="true"><span class="fm-blob fm-blob--a"></span><span class="fm-blob fm-blob--b"></span><span class="fm-grid"></span></div>
+		<div class="fm-hero__glow" aria-hidden="true"></div>
 		<div class="fm-wrap fm-ty__in">
 			<div class="fm-ty__badge fm-rise" style="--d:0" aria-hidden="true">
 				<svg viewBox="0 0 80 80"><circle class="fm-ty__ring" cx="40" cy="40" r="34"/><path class="fm-ty__check" d="M25 41 L36 52 L56 30"/></svg>
 			</div>
-			<h1 class="fm-hero__title fm-rise" style="--d:1">Your quote is on its way. Expect it within 24 hours.</h1>
+			<h1 class="fm-h1 fm-rise" style="--d:1"><span class="fm-ink">Your quote is on its way.</span> <span class="fm-mute">Expect it within 24 hours.</span></h1>
 			<p class="fm-hero__sub fm-rise" style="--d:2">
 				<?php if ( isset( $types[ $lt ] ) ) : ?>
 					We're pricing everything for you as an <b><?php echo esc_html( strtolower( $types[ $lt ] ) ); ?></b>: product cost, QC, prep, warehousing and shipping, line by line.
@@ -42,7 +42,7 @@ $cal = $o['calendar_url'];
 	<section class="fm-section fm-ty__cal" aria-labelledby="fm-cal-title">
 		<div class="fm-wrap">
 			<div class="fm-head fm-reveal">
-				<h2 id="fm-cal-title">Want to talk it through? Book a 15-minute call.</h2>
+				<h2 id="fm-cal-title" class="fm-h2">Want to talk it through? Book a 15-minute call.</h2>
 				<p>Pick a time that suits you and speak with the team who'll handle your orders.</p>
 			</div>
 			<?php if ( $cal ) : ?>
@@ -50,7 +50,7 @@ $cal = $o['calendar_url'];
 					<iframe src="<?php echo esc_url( $cal ); ?>" title="Book a 15-minute call with Fulfillmen" loading="lazy" allow="payment"></iframe>
 				</div>
 			<?php elseif ( fm_lp_show_placeholders() ) : ?>
-				<div class="fm-cal fm-placeholder"><span>Booking calendar<br><small>Add the calendar URL in Settings → Fulfillmen Landing (visible to admins only)</small></span></div>
+				<div class="fm-cal fm-ph"><span>Booking calendar<br><small>Add the calendar URL in Settings → Fulfillmen Landing (visible to admins only)</small></span></div>
 			<?php endif; ?>
 		</div>
 	</section>

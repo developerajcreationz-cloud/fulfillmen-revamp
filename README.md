@@ -2,7 +2,26 @@
 
 A conversion-focused, animated quote landing page for fulfillmen.com, built from the *Fulfillmen Landing Page CRO Brief*.
 
-**Stack:** a WordPress plugin. PHP renders the pages on the server, vanilla JS handles the behaviour and GSAP 3.13 + ScrollTrigger (bundled locally) run the animations. It is not a static HTML page. It runs on any Hostinger WordPress plan with PHP 7.4+ and WordPress 6.2+, and it works with Elementor, block themes and LiteSpeed Cache. There is no build step.
+**Stack:** a WordPress plugin. PHP renders the pages on the server, vanilla JS handles the behaviour, Lenis 1.1 provides smooth scrolling (as on razepremier.com) and GSAP 3.13 + ScrollTrigger run the animations. All three libraries are bundled locally. It is not a static HTML page. It runs on any Hostinger WordPress plan with PHP 7.4+ and WordPress 6.2+, and it works with Elementor, block themes and LiteSpeed Cache. There is no build step.
+
+## Design direction (v2)
+
+v2 follows the razepremier.com design language in Fulfillmen's teal:
+
+- Geist and Geist Mono type
+- two-tone headlines with an icon tile set inline
+- a floating pill navigation bar
+- words that un-blur as you scroll
+- a workflow diagram whose steps light up as "Completed"
+- dark panels with a glow
+- a two-column FAQ and a testimonial marquee
+
+Research behind it:
+
+- **Fulfillment design leaders (ShipMonk, Stord, Flexport, ShipBob):** they win with product UI built in HTML, bento capability grids, network maps and big stat rows.
+- **China-niche competitors that rank for "china fulfillment / 3PL" (SendFromChina, ChinaDivision, NextSmartShip, Fulfillbot):** they use dated orange-and-blue stock-photo layouts.
+
+The v2 hero therefore shows a live "one dashboard" mock with KPIs, a shipments map, a live order feed and a landed-cost breakdown. It proves the headline's promise, and no China competitor has anything like it.
 
 ## Install
 

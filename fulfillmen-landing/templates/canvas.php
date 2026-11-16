@@ -20,24 +20,26 @@ $fm_logo    = fm_lp_opt( 'logo_url' );
 <body <?php body_class( 'fm-canvas' ); ?>>
 <?php wp_body_open(); ?>
 <a class="fm-skip" href="#fm-main">Skip to content</a>
+<span id="top"></span>
 <header class="fm-header" data-fm-header>
-	<div class="fm-wrap fm-header__in">
+	<div class="fm-header__pill">
 		<a class="fm-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="Fulfillmen home">
 			<?php if ( $fm_logo ) : ?>
-				<img src="<?php echo esc_url( $fm_logo ); ?>" alt="Fulfillmen" width="146" height="42" decoding="async" fetchpriority="high">
+				<img src="<?php echo esc_url( $fm_logo ); ?>" alt="Fulfillmen" width="120" height="34" decoding="async" fetchpriority="high">
 			<?php else : ?>
 				<span>Fulfillmen</span>
 			<?php endif; ?>
 		</a>
 		<?php if ( $fm_is_land ) : ?>
 			<nav class="fm-header__nav" aria-label="Page sections">
-				<a href="#how">How it works</a>
+				<a href="#path">Your path</a>
+				<a href="#how">Process</a>
 				<a href="#proof">Results</a>
 				<a href="#faq">FAQ</a>
 			</nav>
-			<a class="fm-btn fm-btn--sm" href="#quote" data-fm-cta="header">Get my free quote</a>
+			<a class="fm-btn fm-btn--teal fm-btn--sm" href="#quote" data-fm-cta="header">Get my free quote</a>
 		<?php else : ?>
-			<a class="fm-btn fm-btn--ghost fm-btn--sm" href="<?php echo esc_url( home_url( '/' ) ); ?>">Back to fulfillmen.com</a>
+			<a class="fm-btn fm-btn--teal fm-btn--sm" href="<?php echo esc_url( home_url( '/' ) ); ?>">Back to fulfillmen.com</a>
 		<?php endif; ?>
 	</div>
 </header>

@@ -80,12 +80,13 @@ class FM_LP_Frontend {
 			return;
 		}
 		if ( fm_lp_opt( 'load_fonts' ) ) {
-			wp_enqueue_style( 'fm-fonts', 'https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap', array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+			wp_enqueue_style( 'fm-fonts', 'https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap', array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 		}
 		wp_enqueue_style( 'fm-landing', FM_LP_URL . 'assets/css/landing.css', array(), FM_LP_VERSION );
+		wp_register_script( 'fm-lenis', FM_LP_URL . 'assets/vendor/lenis.min.js', array(), '1.1.20', true );
 		wp_register_script( 'fm-gsap', FM_LP_URL . 'assets/vendor/gsap.min.js', array(), '3.13.0', true );
 		wp_register_script( 'fm-gsap-st', FM_LP_URL . 'assets/vendor/ScrollTrigger.min.js', array( 'fm-gsap' ), '3.13.0', true );
-		wp_enqueue_script( 'fm-landing', FM_LP_URL . 'assets/js/landing.js', array( 'fm-gsap', 'fm-gsap-st' ), FM_LP_VERSION, true );
+		wp_enqueue_script( 'fm-landing', FM_LP_URL . 'assets/js/landing.js', array( 'fm-lenis', 'fm-gsap', 'fm-gsap-st' ), FM_LP_VERSION, true );
 		wp_localize_script(
 			'fm-landing',
 			'FM_LP',
@@ -97,7 +98,7 @@ class FM_LP_Frontend {
 	}
 
 	public static function defer( $tag, $handle ) {
-		if ( in_array( $handle, array( 'fm-gsap', 'fm-gsap-st', 'fm-landing' ), true ) && false === strpos( $tag, ' defer' ) ) {
+		if ( in_array( $handle, array( 'fm-lenis', 'fm-gsap', 'fm-gsap-st', 'fm-landing' ), true ) && false === strpos( $tag, ' defer' ) ) {
 			$tag = str_replace( ' src=', ' defer src=', $tag );
 		}
 		return $tag;
