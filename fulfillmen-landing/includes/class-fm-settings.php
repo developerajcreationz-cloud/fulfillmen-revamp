@@ -54,7 +54,7 @@ class FM_LP_Settings {
 				'stats'           => array( 'Key numbers', 'textarea', 'One per line: value | suffix | label   e.g. 20 | + | Years fulfilling globally' ),
 				'testimonials'    => array( 'Testimonials (3–5, real clients only)', 'textarea', 'One per line: Name | Store type | Result | Quote. Hidden from visitors until filled.' ),
 				'warehouse_media' => array( 'Warehouse photos / video', 'textarea', 'One URL per line (.jpg/.webp/.png or .mp4). Videos lazy-load. Hidden from visitors until filled.' ),
-				'load_fonts'      => array( 'Load Geist + Geist Mono from Google Fonts', 'checkbox', 'Untick if your theme already loads them.' ),
+				'load_fonts'      => array( 'Load Archivo + JetBrains Mono from Google Fonts', 'checkbox', 'Untick if your theme already loads them.' ),
 			),
 		);
 	}

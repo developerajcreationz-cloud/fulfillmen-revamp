@@ -80,7 +80,7 @@ class FM_LP_Frontend {
 			return;
 		}
 		if ( fm_lp_opt( 'load_fonts' ) ) {
-			wp_enqueue_style( 'fm-fonts', 'https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap', array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+			wp_enqueue_style( 'fm-fonts', 'https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;500&display=swap', array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 		}
 		wp_enqueue_style( 'fm-landing', FM_LP_URL . 'assets/css/landing.css', array(), FM_LP_VERSION );
 		wp_register_script( 'fm-lenis', FM_LP_URL . 'assets/vendor/lenis.min.js', array(), '1.1.20', true );

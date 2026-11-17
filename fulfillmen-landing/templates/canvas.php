@@ -22,6 +22,7 @@ $fm_logo    = fm_lp_opt( 'logo_url' );
 <a class="fm-skip" href="#fm-main">Skip to content</a>
 <span id="top"></span>
 <header class="fm-header" data-fm-header>
+	<div class="fm-header__strip"><div class="fm-header__strip-in"><span><i class="fm-live"></i> <?php echo esc_html( fm_lp_opt( 'delivery_proof' ) ); ?></span><span>Quotes answered within 24 h</span><span>No minimums · No lock-in</span></div></div>
 	<div class="fm-header__pill">
 		<a class="fm-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="Fulfillmen home">
 			<?php if ( $fm_logo ) : ?>

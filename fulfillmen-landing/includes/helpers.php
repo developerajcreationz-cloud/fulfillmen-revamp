@@ -99,6 +99,21 @@ function fm_lp_thankyou_url() {
 	return $url ? $url : home_url( '/quote-thank-you/' );
 }
 
+/** Deterministic barcode (SVG rects) for labels/waybills. */
+function fm_lp_barcode( $seed, $w = 220, $h = 44 ) {
+	$x    = 0;
+	$out  = '';
+	$hash = md5( $seed ) . md5( strrev( $seed ) );
+	for ( $k = 0; $k < strlen( $hash ) && $x < $w; $k++ ) {
+		$n   = hexdec( $hash[ $k ] );
+		$bw  = 1 + ( $n % 3 );
+		$gap = 1 + ( ( $n >> 2 ) % 2 );
+		$out .= '<rect x="' . $x . '" y="0" width="' . $bw . '" height="' . $h . '"/>';
+		$x   += $bw + $gap;
+	}
+	return '<svg class="fm-barcode" viewBox="0 0 ' . $x . ' ' . $h . '" preserveAspectRatio="none" aria-hidden="true">' . $out . '</svg>';
+}
+
 /** Inline SVG icon set (stroke icons, currentColor). */
 function fm_lp_icon( $name ) {
 	$p = array(

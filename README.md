@@ -2,26 +2,32 @@
 
 A conversion-focused, animated quote landing page for fulfillmen.com, built from the *Fulfillmen Landing Page CRO Brief*.
 
-**Stack:** a WordPress plugin. PHP renders the pages on the server, vanilla JS handles the behaviour, Lenis 1.1 provides smooth scrolling (as on razepremier.com) and GSAP 3.13 + ScrollTrigger run the animations. All three libraries are bundled locally. It is not a static HTML page. It runs on any Hostinger WordPress plan with PHP 7.4+ and WordPress 6.2+, and it works with Elementor, block themes and LiteSpeed Cache. There is no build step.
+**Stack:** a WordPress plugin. PHP renders the pages on the server and vanilla JS handles the behaviour. Lenis 1.1 provides smooth scrolling and GSAP 3.13 + ScrollTrigger run the animations; both are bundled locally. It is not a static HTML page. It runs on any Hostinger WordPress plan with PHP 7.4+ and WordPress 6.2+, and it works with Elementor, block themes and LiteSpeed Cache. There is no build step.
 
-## Design direction (v2)
+## Design direction (v3: logistics premium)
 
-v2 follows the razepremier.com design language in Fulfillmen's teal:
+The look is built from the trade's own artifacts, so it reads as a premium China-fulfilment brand rather than a generic SaaS or agency page.
 
-- Geist and Geist Mono type
-- two-tone headlines with an icon tile set inline
-- a floating pill navigation bar
-- words that un-blur as you scroll
-- a workflow diagram whose steps light up as "Completed"
-- dark panels with a glow
-- a two-column FAQ and a testimonial marquee
+| Section | Artifact | Motion |
+|---|---|---|
+| Hero | A real dotted world map (Natural Earth data), with routes from the Huizhou hub to the US, UK, EU, UAE, Singapore and Australia | Parcels travel each lane; the waybill tilts toward the cursor |
+| Hero card | A shipping label / waybill: 7–15 days, ship from Huizhou, QC passed, barcode | The "Ship to" destination cycles |
+| Below hero | An airport-style departure board of outbound lanes (labelled illustrative) | Split-flap rows flip |
+| Pick your path | Kraft cartons with tape, handling marks and FBA / DS / OB stickers | A SELECTED rubber stamp on click |
+| How it works | A conveyor line through Source → Inspect → Store → Ship | The carton rides the belt on scroll and gains a QC sticker, tape and a shipping label |
+| Offer B | A pre-shipment photo inspection report with polaroids | An APPROVED stamp slams down |
+| Proof | A manifest-style stats table, a carrier tracking timeline and a comparison table | Count-ups; milestones fill in |
+| Quote | A printed receipt of the quote lines, and the form laid out as a numbered waybill (01–05) | — |
 
-Research behind it:
+- **Type:** Archivo, which fulfillmen.com already uses, in its expanded industrial cut, plus JetBrains Mono for data labels.
+- **Colour:** brand teal #00A89C, harbour dark, manifest paper, kraft and signal amber.
 
-- **Fulfillment design leaders (ShipMonk, Stord, Flexport, ShipBob):** they win with product UI built in HTML, bento capability grids, network maps and big stat rows.
-- **China-niche competitors that rank for "china fulfillment / 3PL" (SendFromChina, ChinaDivision, NextSmartShip, Fulfillbot):** they use dated orange-and-blue stock-photo layouts.
+**Research behind it:**
 
-The v2 hero therefore shows a live "one dashboard" mock with KPIs, a shipments map, a live order feed and a landed-cost breakdown. It proves the headline's promise, and no China competitor has anything like it.
+- **Fulfillment design leaders (ShipMonk, Stord, Flexport, ShipBob):** they win with product-specific visuals, network maps and big stat rows.
+- **The China-niche sites that rank (SendFromChina, ChinaDivision, NextSmartShip, Fulfillbot):** they use generic orange-and-blue stock-photo templates. None of them uses the trade's own visual language.
+
+The map data lives in `templates/partials/world-map-data.php`. It was generated once from world-atlas / Natural Earth (public domain) with d3-geo.
 
 ## Install
 

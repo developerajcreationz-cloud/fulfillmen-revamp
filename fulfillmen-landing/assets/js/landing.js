@@ -1,4 +1,4 @@
-/* Fulfillmen Landing v2 — behaviour + motion.
+/* Fulfillmen Landing v3 — behaviour + motion.
  * Progressive enhancement: all content is visible and the form posts via
  * admin-post.php even if this file, Lenis or GSAP fail to load. */
 (function () {
@@ -58,8 +58,6 @@
 		var onScroll = function () {
 			var y = window.scrollY;
 			header.classList.toggle('is-scrolled', y > 10);
-			header.classList.toggle('is-hidden', y > 600 && y > lastY + 4);
-			if (y < lastY - 4 || y < 600) header.classList.remove('is-hidden');
 			lastY = y;
 		};
 		window.addEventListener('scroll', onScroll, { passive: true });
@@ -164,7 +162,7 @@
 				e.preventDefault();
 				var first = $('.is-invalid input, .is-invalid textarea', form);
 				if (first) first.focus();
-				var card = form.closest('.fm-formcard');
+				var card = form.closest('.fm-formdoc');
 				card.classList.remove('fm-shake'); void card.offsetWidth; card.classList.add('fm-shake');
 				return;
 			}
@@ -226,170 +224,158 @@
 		vids.forEach(function (v) { vo.observe(v); });
 	}
 
-	/* ---------- Dashboard: dotted map + live order feed ---------- */
-	var dots = $('.fm-routes__dots');
-	if (dots) {
-		var ns = 'http://www.w3.org/2000/svg', frag = document.createDocumentFragment();
-		for (var y = 10; y < 200; y += 12) {
-			for (var x = 10; x < 420; x += 12) {
-				// cheap "continent" mask: a few soft blobs
-				var on = [[110, 60, 70], [170, 120, 55], [300, 90, 95], [360, 175, 40], [70, 150, 40]].some(function (b) { var dx = x - b[0], dy = (y - b[1]) * 1.3; return dx * dx + dy * dy < b[2] * b[2]; });
-				if (!on) continue;
-				var c = document.createElementNS(ns, 'circle');
-				c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 1.6);
-				frag.appendChild(c);
-			}
-		}
-		dots.appendChild(frag);
-	}
-	var feed = $('[data-fm-feed]');
-	if (feed && !reduce) {
-		var n = 20482, cc = ['US', 'UK', 'DE', 'AU', 'CA', 'FR', 'AE', 'NL'], ch = ['Shopify', 'Amazon FBA', 'WooCommerce', 'eBay', 'TikTok Shop'];
-		var st = [['s-qc', 'QC passed'], ['s-pack', 'Packed'], ['s-ship', 'Shipped'], ['s-done', 'Delivered']];
+	/* ---------- Waybill: "ship to" cycles through real destinations ---------- */
+	var dest = $('[data-fm-dest-c]');
+	if (dest && !reduce) {
+		var places = ['Los Angeles, US', 'London, UK', 'Sydney, AU', 'Toronto, CA', 'Frankfurt, DE', 'Dubai, AE', 'New York, US'], di = 0;
 		setInterval(function () {
 			if (document.hidden) return;
-			// advance existing rows one stage
-			$$('li', feed).forEach(function (li) {
-				var em = $('em', li), idx = st.findIndex(function (s) { return em.classList.contains(s[0]); });
-				if (idx > -1 && idx < st.length - 1 && Math.random() > 0.4) { em.className = st[idx + 1][0]; em.textContent = st[idx + 1][1]; }
-			});
-			var li = document.createElement('li');
-			li.className = 'is-new';
-			li.innerHTML = '<span class="fm-cc">' + cc[n % cc.length] + '</span><span>#FM-' + n + ' · ' + ch[n % ch.length] + '</span><em class="s-qc">QC passed</em>';
-			n++;
-			feed.insertBefore(li, feed.firstChild);
-			if (feed.children.length > 4) feed.removeChild(feed.lastElementChild);
+			dest.style.opacity = 0;
+			setTimeout(function () { di = (di + 1) % places.length; dest.textContent = places[di]; dest.style.opacity = 1; }, 300);
 		}, 2600);
+	}
+
+	/* ---------- Departure board: rows flip to the next lane ---------- */
+	var boardRows = $('[data-fm-board]');
+	var boardData = $('[data-fm-board-data]');
+	if (boardRows && boardData && !reduce) {
+		var lanes = [];
+		try { lanes = JSON.parse(boardData.textContent); } catch (e) { lanes = []; }
+		var next = 3, rowI = 0;
+		setInterval(function () {
+			if (document.hidden || !lanes.length) return;
+			var row = boardRows.children[rowI % boardRows.children.length];
+			var lane = lanes[next % lanes.length];
+			$$('.fm-flap', row).forEach(function (c, k) {
+				setTimeout(function () {
+					c.classList.remove('is-flip'); void c.offsetWidth; c.classList.add('is-flip');
+					setTimeout(function () {
+						if (k === 0) c.innerHTML = lane[0] + ' <em>' + lane[1] + '</em>';
+						else if (k === 3) { c.textContent = lane[4]; c.className = 'fm-flap fm-st ' + lane[5] + ' is-flip'; }
+						else c.textContent = lane[k + 1];
+					}, 250);
+				}, k * 90);
+			});
+			next++; rowI++;
+		}, 2400);
 	}
 
 	if (!anim) return;
 
-	/* Parcels along routes */
-	$$('.fm-routes__parcels rect').forEach(function (p, i) {
-		var path = document.getElementById(p.getAttribute('data-route'));
-		if (!path || !path.getTotalLength) return;
-		var len = path.getTotalLength(), o = { t: 0 };
-		gsap.to(o, {
-			t: 1, duration: 2.8 + (i % 3) * 0.5, ease: 'power1.inOut', repeat: -1, delay: 0.6 + i * 0.5, repeatDelay: 0.5,
-			onUpdate: function () {
-				var pt = path.getPointAtLength((1 - o.t) * len); // from Huizhou outwards
-				p.setAttribute('x', pt.x - 4); p.setAttribute('y', pt.y - 4);
-				p.style.opacity = o.t < 0.08 ? o.t / 0.08 : (o.t > 0.92 ? (1 - o.t) / 0.08 : 1);
-			}
+	/* ---------- Map parcels (only animate while the map is on screen) ---------- */
+	$$('.fm-world').forEach(function (svg) {
+		var tweens = [];
+		$$('.fm-world__parcels circle', svg).forEach(function (p, i) {
+			var path = document.getElementById(p.getAttribute('data-route'));
+			if (!path || !path.getTotalLength) return;
+			var len = path.getTotalLength(), o = { t: 0 };
+			tweens.push(gsap.to(o, {
+				t: 1, duration: 3 + (i % 4) * 0.6, ease: 'power1.inOut', repeat: -1, delay: 0.4 + i * 0.45, repeatDelay: 0.8,
+				onUpdate: function () {
+					var pt = path.getPointAtLength(o.t * len);
+					p.setAttribute('cx', pt.x); p.setAttribute('cy', pt.y);
+					p.style.opacity = o.t < 0.06 ? o.t / 0.06 : (o.t > 0.94 ? (1 - o.t) / 0.06 : 1);
+				}
+			}));
 		});
+		if ('IntersectionObserver' in window) {
+			new IntersectionObserver(function (en) { tweens.forEach(function (t) { if (en[0].isIntersecting) t.resume(); else t.pause(); }); }).observe(svg);
+		}
 	});
+	gsap.from('.fm-world--hero .fm-world__routes path', { opacity: 0, duration: 1.2, stagger: 0.12, delay: 0.5 });
+
+	/* Waybill tilts toward the cursor */
+	var waybill = $('[data-fm-waybill]');
+	if (waybill && fine && hero) {
+		var wx = gsap.quickTo(waybill, 'rotationY', { duration: 0.8, ease: 'power3' }), wy = gsap.quickTo(waybill, 'rotationX', { duration: 0.8, ease: 'power3' });
+		hero.addEventListener('pointermove', function (e) {
+			wx((e.clientX / window.innerWidth - 0.5) * 14);
+			wy((0.5 - e.clientY / window.innerHeight) * 10);
+		});
+	}
 
 	/* Count-up */
-	function countUp(el, delay) {
+	function countUp(el) {
 		var end = parseFloat(el.getAttribute('data-fm-count'));
 		if (isNaN(end)) return;
 		var dec = parseInt(el.getAttribute('data-fm-dec') || '0', 10), o = { v: 0 };
-		gsap.to(o, { v: end, duration: 1.8, delay: delay || 0, ease: 'power3.out', onUpdate: function () {
-			el.textContent = end >= 1000 ? Math.round(o.v).toLocaleString('en-US') : o.v.toFixed(dec);
-		} });
+		gsap.to(o, { v: end, duration: 1.8, ease: 'power3.out', onUpdate: function () { el.textContent = o.v.toFixed(dec); } });
 	}
-	$$('.fm-kpi [data-fm-count]').forEach(function (el) { countUp(el, 0.9); });
 
-	/* Floating hero tiles follow the cursor */
-	var tiles = $$('.fm-tile');
-	if (fine && tiles.length) {
-		var movers = tiles.map(function (t) {
-			var d = parseFloat(t.getAttribute('data-depth')) || 1;
-			return { x: gsap.quickTo(t, 'x', { duration: 1, ease: 'power3' }), y: gsap.quickTo(t, 'y', { duration: 1, ease: 'power3' }), d: d };
-		});
-		hero.addEventListener('pointermove', function (e) {
-			var cx = e.clientX / window.innerWidth - 0.5, cy = e.clientY / window.innerHeight - 0.5;
-			movers.forEach(function (m) { m.x(cx * 40 * m.d); m.y(cy * 30 * m.d); });
+	/* Magnetic CTAs */
+	if (fine) {
+		$$('.fm-magnetic').forEach(function (b) {
+			var xTo = gsap.quickTo(b, 'x', { duration: 0.5, ease: 'power3' }), yTo = gsap.quickTo(b, 'y', { duration: 0.5, ease: 'power3' });
+			b.addEventListener('pointermove', function (e) { var r = b.getBoundingClientRect(); xTo((e.clientX - r.left - r.width / 2) * 0.15); yTo((e.clientY - r.top - r.height / 2) * 0.3); });
+			b.addEventListener('pointerleave', function () { xTo(0); yTo(0); });
 		});
 	}
 
 	if (!ST) return;
 
-	/* Dashboard tilts up into place */
-	var stage = $('[data-fm-stage]');
-	if (stage) {
-		gsap.fromTo(stage, { rotationX: 14, scale: 0.94, transformPerspective: 1600, transformOrigin: '50% 0%' }, {
-			rotationX: 0, scale: 1, ease: 'none',
-			scrollTrigger: { trigger: stage, start: 'top 92%', end: 'top 25%', scrub: true }
-		});
-	}
-	gsap.to('.fm-tiles', { yPercent: -18, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
-
-	/* Statement: words un-blur as you scroll */
-	var words = $$('[data-fm-words] .fm-w');
-	if (words.length) {
-		gsap.fromTo(words, { opacity: 0.12, filter: 'blur(6px)' }, {
-			opacity: 1, filter: 'blur(0px)', stagger: 0.08, ease: 'none',
-			scrollTrigger: { trigger: '[data-fm-words]', start: 'top 85%', end: 'bottom 45%', scrub: 0.6 }
-		});
-	}
-
 	/* Generic reveals */
 	var reveals = $$('.fm-reveal', root);
-	gsap.set(reveals, { autoAlpha: 0, y: 34, filter: 'blur(6px)' });
+	gsap.set(reveals, { autoAlpha: 0, y: 30 });
 	ST.batch(reveals, {
 		start: 'top 90%', once: true,
-		onEnter: function (b) { gsap.to(b, { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.9, ease: 'power3.out', stagger: 0.09, overwrite: true, clearProps: 'filter' }); }
+		onEnter: function (b) { gsap.to(b, { autoAlpha: 1, y: 0, duration: 0.85, ease: 'power3.out', stagger: 0.08, overwrite: true }); }
 	});
 
-	/* Node flow: each step lights up and gets its "Completed" badge in order */
-	var flow = $('[data-fm-nodes]');
-	if (flow) {
-		var nodes = $$('.fm-node', flow), lines = $$('.fm-node__ln i', flow), split = $('.fm-node__split', flow);
-		gsap.set($$('.fm-node__done', flow), { scale: 0, autoAlpha: 0 });
-		gsap.set(nodes, { autoAlpha: 0.35, y: 12 });
-		gsap.set(lines, { scaleY: 0 });
-		if (split) gsap.set(split, { clipPath: 'inset(0 50% 0 50%)' });
-		var tl = gsap.timeline({ paused: true });
-		nodes.forEach(function (nd, k) {
-			var at = k * 0.55;
-			tl.to(nd, { autoAlpha: 1, y: 0, duration: 0.4, ease: 'power2.out', onStart: function () { nd.classList.add('is-on'); } }, at)
-			  .to($('.fm-node__done', nd), { scale: 1, autoAlpha: 1, duration: 0.35, ease: 'back.out(3)' }, at + 0.3)
-			  .add(function () { nd.classList.remove('is-on'); }, at + 0.9);
-			if (lines[k]) tl.to(lines[k], { scaleY: 1, duration: 0.25, ease: 'none' }, at + 0.35);
-			if (split && k === lines.length - 1) tl.to(split, { clipPath: 'inset(0 0% 0 0%)', duration: 0.3 }, at + 0.55);
-		});
-		ST.create({ trigger: flow, start: 'top 70%', once: true, onEnter: function () { tl.play(); } });
-	}
-
-	/* Path cards: 3D tilt + cursor spotlight; magnetic buttons */
-	if (fine) {
-		$$('.fm-path').forEach(function (c) {
-			var rx = gsap.quickTo(c, 'rotationX', { duration: 0.6, ease: 'power3' }), ry = gsap.quickTo(c, 'rotationY', { duration: 0.6, ease: 'power3' });
-			gsap.set(c, { transformPerspective: 1000 });
-			c.addEventListener('pointermove', function (e) {
-				var r = c.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
-				rx((0.5 - py) * 7); ry((px - 0.5) * 9);
-				c.style.setProperty('--mx', (px * 100) + '%'); c.style.setProperty('--my', (py * 100) + '%');
-			});
-			c.addEventListener('pointerleave', function () { rx(0); ry(0); });
-		});
-		$$('.fm-magnetic').forEach(function (b) {
-			var xTo = gsap.quickTo(b, 'x', { duration: 0.5, ease: 'power3' }), yTo = gsap.quickTo(b, 'y', { duration: 0.5, ease: 'power3' });
-			b.addEventListener('pointermove', function (e) { var r = b.getBoundingClientRect(); xTo((e.clientX - r.left - r.width / 2) * 0.2); yTo((e.clientY - r.top - r.height / 2) * 0.35); });
-			b.addEventListener('pointerleave', function () { xTo(0); yTo(0); });
+	/* Conveyor: the carton rides the line as you scroll and changes at each station */
+	var line = $('[data-fm-line]');
+	var box = $('[data-fm-box]');
+	var stations = $$('.fm-station');
+	if (line && stations.length) {
+		var fillEl = $('.fm-line__fill', line);
+		var qc = box && $('.b-qc', box), lbl = box && $('.b-label', box), tape = box && $('.b-tape', box);
+		var setState = function (p) {
+			var idx = Math.min(stations.length - 1, Math.floor(p * stations.length * 0.999));
+			stations.forEach(function (s, k) { s.classList.toggle('is-on', k === idx); });
+			if (qc) qc.style.opacity = p > 0.3 ? 1 : 0;
+			if (tape) tape.style.opacity = p > 0.55 ? 1 : 0;
+			if (lbl) lbl.style.opacity = p > 0.8 ? 1 : 0;
+		};
+		setState(0);
+		if (fillEl) fillEl.style.transform = 'scaleX(0)';
+		ST.create({
+			trigger: line, start: 'top 75%', end: 'bottom 45%', scrub: 0.6,
+			onUpdate: function (self) {
+				var p = self.progress;
+				if (box && box.offsetParent) box.style.left = (p * 100) + '%';
+				if (fillEl) fillEl.style.transform = 'scaleX(' + p + ')';
+				setState(p);
+			}
 		});
 	}
 
-	/* QC photo thumbs pop in like a shutter roll */
-	var thumbs = $$('.fm-qc__thumbs i');
-	if (thumbs.length) gsap.fromTo(thumbs, { scale: 0.5, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, stagger: 0.12, duration: 0.4, ease: 'back.out(2)', scrollTrigger: { trigger: '.fm-qc', start: 'top 70%', once: true } });
-	var qcl = $$('.fm-qc__list li');
-	if (qcl.length) gsap.fromTo(qcl, { autoAlpha: 0, x: -14 }, { autoAlpha: 1, x: 0, stagger: 0.25, duration: 0.45, delay: 0.6, ease: 'power2.out', scrollTrigger: { trigger: '.fm-qc', start: 'top 70%', once: true } });
+	/* Inspection report: polaroids drop, then APPROVED slams down */
+	var report = $('.fm-report');
+	if (report) {
+		var stamp = $('[data-fm-stamp]', report);
+		gsap.set(stamp, { autoAlpha: 0, scale: 2.6 });
+		var rtl = gsap.timeline({ scrollTrigger: { trigger: report, start: 'top 65%', once: true } });
+		rtl.from($$('.fm-polaroid', report), { y: -30, autoAlpha: 0, stagger: 0.1, duration: 0.5, ease: 'back.out(1.6)' })
+		   .from($$('.fm-report__list li', report), { autoAlpha: 0, x: -12, stagger: 0.15, duration: 0.35 }, '-=0.1')
+		   .to(stamp, { autoAlpha: 0.9, scale: 1, duration: 0.28, ease: 'power4.in' })
+		   .to(report, { x: 3, duration: 0.05, yoyo: true, repeat: 3 }, '>-0.02');
+	}
 
-	/* Proof: counters, delivery track, comparison rows, receipt bars */
-	$$('.fm-stat [data-fm-count]').forEach(function (el) { ST.create({ trigger: el, start: 'top 92%', once: true, onEnter: function () { countUp(el); } }); });
-	var fill = $('.fm-track__fill'), pin = $('.fm-track__pin');
-	if (fill && pin) {
-		gsap.timeline({ scrollTrigger: { trigger: '.fm-track', start: 'top 80%', once: true } })
-			.fromTo(fill, { scaleX: 0 }, { scaleX: 1, duration: 2, ease: 'power2.inOut' }, 0)
-			.fromTo(pin, { left: '0%' }, { left: '100%', duration: 2, ease: 'power2.inOut' }, 0)
-			.fromTo('.fm-track__stops li', { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, stagger: 0.65, duration: 0.4 }, 0.1);
+	/* Proof: counters, tracking milestones, comparison rows, receipt lines */
+	$$('.fm-manifest [data-fm-count]').forEach(function (el) { ST.create({ trigger: el, start: 'top 92%', once: true, onEnter: function () { countUp(el); } }); });
+	var trk = $$('[data-fm-track] li');
+	if (trk.length) {
+		trk.forEach(function (li) { li.style.setProperty('--p', 0); });
+		var po = { v: 0 };
+		gsap.to(po, {
+			v: trk.length - 1, duration: (trk.length - 1) * 0.4, ease: 'none', delay: 0.15,
+			scrollTrigger: { trigger: '[data-fm-track]', start: 'top 75%', once: true },
+			onUpdate: function () { trk.forEach(function (li, k) { li.style.setProperty('--p', Math.max(0, Math.min(1, po.v - k))); }); }
+		});
 	}
 	var rows = $$('.fm-vs__row:not(.fm-vs__row--h)');
-	if (rows.length) gsap.fromTo(rows, { autoAlpha: 0, x: 24 }, { autoAlpha: 1, x: 0, stagger: 0.1, duration: 0.55, ease: 'power2.out', scrollTrigger: { trigger: '.fm-vs', start: 'top 80%', once: true } });
-	var bars = $$('.fm-receipt li i');
-	if (bars.length) gsap.fromTo(bars, { scaleX: 0 }, { scaleX: 1, duration: 0.7, stagger: 0.15, ease: 'power3.out', scrollTrigger: { trigger: '.fm-receipt', start: 'top 85%', once: true } });
+	if (rows.length) gsap.from(rows, { autoAlpha: 0, x: 24, stagger: 0.1, duration: 0.5, ease: 'power2.out', scrollTrigger: { trigger: '.fm-vs', start: 'top 80%', once: true } });
+	var dots = $$('.fm-receipt li i');
+	if (dots.length) gsap.from(dots, { scaleX: 0, duration: 0.5, stagger: 0.12, ease: 'power2.out', scrollTrigger: { trigger: '.fm-receipt', start: 'top 85%', once: true } });
 
 	/* FAQ: smooth open/close */
 	$$('.fm-acc__item').forEach(function (d) {
