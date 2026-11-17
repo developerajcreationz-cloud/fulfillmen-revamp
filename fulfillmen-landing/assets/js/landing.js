@@ -1,4 +1,4 @@
-/* Fulfillmen Landing v3 — behaviour + motion.
+/* Fulfillmen Landing v5 — behaviour + motion.
  * Progressive enhancement: all content is visible and the form posts via
  * admin-post.php even if this file, Lenis or GSAP fail to load. */
 (function () {
@@ -264,9 +264,9 @@
 	if (!anim) return;
 
 	/* ---------- Map parcels (only animate while the map is on screen) ---------- */
-	$$('.fm-world').forEach(function (svg) {
+	$$('[data-fm-map]').forEach(function (svg) {
 		var tweens = [];
-		$$('.fm-world__parcels circle', svg).forEach(function (p, i) {
+		$$('.fm-map__parcels circle', svg).forEach(function (p, i) {
 			var path = document.getElementById(p.getAttribute('data-route'));
 			if (!path || !path.getTotalLength) return;
 			var len = path.getTotalLength(), o = { t: 0 };
@@ -283,19 +283,6 @@
 			new IntersectionObserver(function (en) { tweens.forEach(function (t) { if (en[0].isIntersecting) t.resume(); else t.pause(); }); }).observe(svg);
 		}
 	});
-	/* Hero: floating cards drift with the cursor (depth parallax) */
-	var media = $('[data-fm-media]');
-	if (media && fine && hero) {
-		var movers = $$('.fm-fc', media).map(function (c) {
-			var d = parseFloat(c.getAttribute('data-depth')) || 1;
-			return { x: gsap.quickTo(c, 'x', { duration: 1, ease: 'power3' }), y: gsap.quickTo(c, 'y', { duration: 1, ease: 'power3' }), d: d };
-		});
-		hero.addEventListener('pointermove', function (e) {
-			var cx = e.clientX / window.innerWidth - 0.5, cy = e.clientY / window.innerHeight - 0.5;
-			movers.forEach(function (m) { m.x(cx * 22 * m.d); m.y(cy * 18 * m.d); });
-		});
-	}
-
 	/* Count-up */
 	function countUp(el, delay) {
 		var end = parseFloat(el.getAttribute('data-fm-count'));
@@ -303,8 +290,7 @@
 		var dec = parseInt(el.getAttribute('data-fm-dec') || '0', 10), o = { v: 0 };
 		gsap.to(o, { v: end, duration: 1.8, delay: delay || 0, ease: 'power3.out', onUpdate: function () { el.textContent = o.v.toFixed(dec); } });
 	}
-	$$('.fm-fc--cost [data-fm-count], .fm-kpis [data-fm-count]').forEach(function (el) { countUp(el, 0.9); });
-	gsap.from('.fm-fc', { autoAlpha: 0, y: 24, scale: 0.92, duration: 0.8, ease: 'back.out(1.6)', stagger: 0.18, delay: 0.7, clearProps: 'transform' });
+	$$('.fm-kpis [data-fm-count]').forEach(function (el) { if (ST) ST.create({ trigger: el, start: 'top 95%', once: true, onEnter: function () { countUp(el); } }); else countUp(el, 0.9); });
 
 	/* Magnetic CTAs */
 	if (fine) {
@@ -325,31 +311,47 @@
 		onEnter: function (b) { gsap.to(b, { autoAlpha: 1, y: 0, duration: 0.85, ease: 'power3.out', stagger: 0.08, overwrite: true }); }
 	});
 
-	/* Conveyor: the carton rides the line as you scroll and changes at each station */
-	var line = $('[data-fm-line]');
-	var box = $('[data-fm-box]');
-	var stations = $$('.fm-station');
-	if (line && stations.length) {
-		var fillEl = $('.fm-line__fill', line);
-		var qc = box && $('.b-qc', box), lbl = box && $('.b-label', box), tape = box && $('.b-tape', box);
-		var setState = function (p) {
-			var idx = Math.min(stations.length - 1, Math.floor(p * stations.length * 0.999));
-			stations.forEach(function (s, k) { s.classList.toggle('is-on', k === idx); });
-			if (qc) qc.style.opacity = p > 0.3 ? 1 : 0;
-			if (tape) tape.style.opacity = p > 0.55 ? 1 : 0;
-			if (lbl) lbl.style.opacity = p > 0.8 ? 1 : 0;
-		};
-		setState(0);
-		if (fillEl) fillEl.style.transform = 'scaleX(0)';
-		ST.create({
-			trigger: line, start: 'top 75%', end: 'bottom 45%', scrub: 0.6,
-			onUpdate: function (self) {
-				var p = self.progress;
-				if (box && box.offsetParent) box.style.left = (p * 100) + '%';
-				if (fillEl) fillEl.style.transform = 'scaleX(' + p + ')';
-				setState(p);
-			}
+	/* Hero dashboard: tilted back, flattens as it scrolls into view */
+	var dash = $('[data-fm-dash]');
+	if (dash) {
+		gsap.fromTo(dash, { rotateX: 16, scale: 0.94, y: 10 }, {
+			rotateX: 0, scale: 1, y: 0, ease: 'none',
+			scrollTrigger: { trigger: dash, start: 'top 98%', end: 'top 25%', scrub: 0.6 }
 		});
+	}
+
+	/* Path cards: stacked in the middle, fan out into an arc on scroll (desktop) */
+	var fan = $('[data-fm-fan]');
+	if (fan && gsap.matchMedia) {
+		gsap.matchMedia().add('(min-width: 920px)', function () {
+			var slots = $$('.fm-fan__slot', fan);
+			var fr = fan.getBoundingClientRect(), mid = fr.left + fr.width / 2;
+			var tl = gsap.timeline({ scrollTrigger: { trigger: fan, start: 'top 88%', end: 'top 30%', scrub: 0.8 } });
+			slots.forEach(function (sl) {
+				var i = parseFloat(getComputedStyle(sl).getPropertyValue('--i')) || 0;
+				var r = sl.getBoundingClientRect();
+				tl.fromTo(sl,
+					{ x: mid - (r.left + r.width / 2), y: 70 + Math.abs(i) * 6, rotation: i * -3, scale: 0.86 },
+					{ x: 0, y: i * i * 34, rotation: i * 6, scale: 1, ease: 'power2.out' }, 0);
+			});
+			tl.fromTo($('.fm-fan__glow', fan), { autoAlpha: 0.2, scaleX: 0.4 }, { autoAlpha: 1, scaleX: 1, ease: 'none' }, 0);
+		});
+	}
+
+	/* How it works: the step in the middle of the screen drives the live screen */
+	var flow = $('[data-fm-flow]');
+	if (flow) {
+		var fsteps = $$('[data-fm-step]', flow), panels = $$('[data-fm-panel]', flow);
+		var flabel = $('[data-fm-flow-label]', flow), ffill = $('[data-fm-flow-fill]', flow);
+		var setStep = function (n) {
+			fsteps.forEach(function (s, k) { s.classList.toggle('is-on', k === n); });
+			panels.forEach(function (p, k) { p.classList.toggle('is-on', k === n); if (k === n && flabel) flabel.textContent = p.getAttribute('data-label'); });
+		};
+		fsteps.forEach(function (s, k) {
+			ST.create({ trigger: s, start: 'top 55%', end: 'bottom 55%', onToggle: function (self) { if (self.isActive) setStep(k); } });
+			s.addEventListener('click', function () { if (window.innerWidth >= 980) scrollToEl(s); });
+		});
+		if (ffill) gsap.fromTo(ffill, { scaleY: 0 }, { scaleY: 1, ease: 'none', scrollTrigger: { trigger: $('.fm-flow__steps', flow), start: 'top 55%', end: 'bottom 55%', scrub: 0.4 } });
 	}
 
 	/* Inspection report: polaroids drop, then APPROVED slams down */
@@ -365,7 +367,7 @@
 	}
 
 	/* Proof: counters, tracking milestones, comparison rows, receipt lines */
-	$$('.fm-manifest [data-fm-count]').forEach(function (el) { ST.create({ trigger: el, start: 'top 92%', once: true, onEnter: function () { countUp(el); } }); });
+	$$('.fm-stat [data-fm-count]').forEach(function (el) { ST.create({ trigger: el, start: 'top 92%', once: true, onEnter: function () { countUp(el); } }); });
 	var trk = $$('[data-fm-track] li');
 	if (trk.length) {
 		trk.forEach(function (li) { li.style.setProperty('--p', 0); });
@@ -376,6 +378,10 @@
 			onUpdate: function () { trk.forEach(function (li, k) { li.style.setProperty('--p', Math.max(0, Math.min(1, po.v - k))); }); }
 		});
 	}
+	var bars = $$('.fm-stat__bars i');
+	if (bars.length) gsap.from(bars, { scaleX: 0, duration: 1.1, stagger: 0.12, ease: 'power3.out', scrollTrigger: { trigger: '.fm-bento--proof', start: 'top 80%', once: true } });
+	var ticks = $$('.fm-stat__ticks i');
+	if (ticks.length) gsap.from(ticks, { scaleY: 0, transformOrigin: '50% 100%', duration: 0.4, stagger: 0.04, ease: 'back.out(2)', scrollTrigger: { trigger: '.fm-stat__ticks', start: 'top 90%', once: true } });
 	var rows = $$('.fm-vs__row:not(.fm-vs__row--h)');
 	if (rows.length) gsap.from(rows, { autoAlpha: 0, x: 24, stagger: 0.1, duration: 0.5, ease: 'power2.out', scrollTrigger: { trigger: '.fm-vs', start: 'top 80%', once: true } });
 	var dots = $$('.fm-receipt li i');

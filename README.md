@@ -4,20 +4,24 @@ A conversion-focused, animated quote landing page for fulfillmen.com, built from
 
 **Stack:** a WordPress plugin. PHP renders the pages on the server and vanilla JS handles the behaviour. Lenis 1.1 provides smooth scrolling and GSAP 3.13 + ScrollTrigger run the animations; both are bundled locally. It is not a static HTML page. It runs on any Hostinger WordPress plan with PHP 7.4+ and WordPress 6.2+, and it works with Elementor, block themes and LiteSpeed Cache. There is no build step.
 
-## Design (v4)
+## Design (v5)
 
-- **Colours:** Fulfillmen's own palette only — teal `#00A89C`, deep teal `#02353C` and mint `#EBF7F8` — on a **white** page. Sections alternate white and mint, with deep-teal panels for the photo inspection offer and the quote form.
-- **Header (Raze-style):** a floating dark-glass pill with a white logo, dot-separated section links, a glowing teal "f" mark in the centre and a glowing CTA. On mobile it collapses to the logo and the CTA.
-- **Footer (Raze-style):** dark, with the brand block, a CTA, link columns (this page, the real fulfillmen.com service pages, company pages, address) and a teal glow along the bottom edge. It lives in `templates/partials/footer.php`, so the thank-you page uses it too.
-- **Hero:** benchmarked against ShipBob, ShipMonk and Stord (bright split layout, real photography, floating product cards) instead of the current dark full-bleed photo on fulfillmen.com.
-  - Uses Fulfillmen's own team photo, with floating tracking, QC and landed-cost cards over it.
-  - Below it sit Fulfillmen's own platform logos and a KPI strip (7–15 days, 24 h quote, 2.5×, 20%).
-- **Path cards:** Fulfillmen's own photography — containers for FBA, sourcing for dropshipping and the warehouse for own stock.
-- **Logistics details from v3, recoloured:** the scroll-driven conveyor through Source → Inspect → Store → Ship, the photo inspection report with its APPROVED stamp, the tracking timeline, the comparison table and the numbered quote form.
+Researched against Flexport, ShipBob, ShipMonk, ShipHero, Easyship, Freightos, project44, Shipwell and Cart.com.
+
+- **Colours:** Fulfillmen's own palette only (teal `#00A89C`, deep teal `#02353C`, mint `#EBF7F8`) on a white page, with no gradient backgrounds.
+- **Header and footer:** unchanged from v4 (Raze-style floating pill, dark glow footer).
+- **Hero:** centred copy on a light dotted world map with routes from Huizhou and moving parcels (Flexport pattern). A sample client dashboard sits below the copy (KPIs, live shipments map, QC report with real photos, recent shipments, stock). It is labelled **Sample data**, starts tilted and flattens as you scroll.
+- **Platform logos:** in full colour.
+- **How do you sell?:** the three path cards start stacked in the centre and fan out into a tilted arc with a teal glow as you scroll, like the Raze Premier services section. They lay out as a normal grid on mobile.
+- **How it works:** four steps with outlined numbers on a progress rail, plus a sticky product screen that changes per step (supplier comparison, QC report, stock and barcode, tracking). On mobile each screen sits inside its step.
+- **Free photo inspection:** a bento grid with the inspection report, "real photos", "you approve before dispatch", a "found → fixed → shipped" example and a CTA tile.
+- **Proof:** a bento grid with stat cards with small charts, the tracking timeline and the comparison table.
+- **Quote:** one split card, with a deep-teal panel (copy, receipt, route map) and the form on white.
+- **FAQ and final CTA:** unchanged.
 - **Type:** Archivo, the font fulfillmen.com already uses, plus JetBrains Mono for small data labels.
-- **Photos are editable** under Settings → Fulfillmen Landing → Photography. They default to images already on fulfillmen.com.
+- **Photos are editable** under Settings → Fulfillmen Landing → Photography. The QC visuals reuse these photos until the client sends real product QC photos.
 
-The world map on the quote section comes from `templates/partials/world-map-data.php`, generated once from world-atlas / Natural Earth (public domain) with d3-geo.
+The world map comes from `templates/partials/world-map-data.php`, generated once from world-atlas / Natural Earth (public domain) with d3-geo.
 
 ## Install
 

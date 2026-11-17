@@ -1,6 +1,6 @@
 <?php
 /**
- * [fulfillmen_landing] — v4.
+ * [fulfillmen_landing] — v5.
  * White page, Fulfillmen teal / deep teal / mint, real Fulfillmen photography,
  * logistics details (tracking, QC report, conveyor, waybill form).
  * Flow follows the CRO brief §7: Hero → Pick your path → How it works →
@@ -43,17 +43,52 @@ foreach ( array( 'la', 'ny', 'to', 'lo', 'fr', 'du', 'sg', 'sy' ) as $k ) {
 }
 
 $paths = array(
-	'fba'          => array( 'Amazon FBA', 'Amazon FBA sellers', 'We prep, label and ship straight to Amazon warehouses.', array( 'FNSKU labels & poly bags', 'Carton & pallet prep to Amazon spec', 'Sea, air or rail to FBA centres' ), 'Get my FBA quote', $o['img_fba'] ),
-	'dropshipping' => array( 'Dropshipping', 'Dropshippers', 'Source from China and ship each order directly to your customer.', array( 'Factory sourcing & price negotiation', 'Orders sync from your store', 'Tracked door-to-door in 7–15 days' ), 'Get my dropshipping quote', $o['img_dropshipping'] ),
-	'own_brand'    => array( 'Own stock', 'Brands with their own stock', 'Store your inventory with us. We pick, pack and ship every order.', array( 'Warehousing in ' . $city, 'Branded packaging & inserts', 'Pick, pack and ship per order' ), 'Get my fulfilment quote', $o['img_own_brand'] ),
+	'fba'          => array( 'Amazon FBA', 'Amazon FBA sellers', 'We prep, label and ship straight to Amazon warehouses.', array( 'FNSKU labels & poly bags', 'Carton & pallet prep to Amazon spec', 'Sea, air or rail to FBA centres' ), 'Get my FBA quote', $o['img_fba'], 'amazon' ),
+	'dropshipping' => array( 'Dropshipping', 'Dropshippers', 'Source from China and ship each order directly to your customer.', array( 'Factory sourcing & price negotiation', 'Orders sync from your store', 'Tracked door-to-door in 7–15 days' ), 'Get my dropshipping quote', $o['img_dropshipping'], 'drop' ),
+	'own_brand'    => array( 'Own stock', 'Brands with their own stock', 'Store your inventory with us. We pick, pack and ship every order.', array( 'Warehousing in ' . $city, 'Branded packaging & inserts', 'Pick, pack and ship per order' ), 'Get my fulfilment quote', $o['img_own_brand'], 'brand' ),
 );
 
 $steps = array(
-	array( 'search', 'Source', 'We vet factories, negotiate your price and place the order.' ),
-	array( 'camera', 'Inspect', 'Every batch is checked against your spec and photographed.' ),
-	array( 'box', 'Store', "Stock sits in our {$city} warehouse, live in your dashboard." ),
-	array( 'plane', 'Ship', 'Picked, packed and shipped to customers or Amazon, fully tracked.' ),
+	array( 'search', 'Source', 'We vet factories, negotiate your price and place the order.', 'a shortlist of vetted factories with prices' ),
+	array( 'camera', 'Inspect', 'Every batch is checked against your spec and photographed.', 'a photo QC report to approve' ),
+	array( 'box', 'Store', "Stock sits in our {$city} warehouse, live in your dashboard.", 'live stock levels per SKU and channel' ),
+	array( 'plane', 'Ship', 'Picked, packed and shipped to customers or Amazon, fully tracked.', 'a tracking number for every parcel' ),
 );
+
+/* Real Fulfillmen photography reused for the QC visuals. */
+$qc_imgs = array_values( array_filter( array( $o['img_fba'], $o['hero_image'], $o['img_dropshipping'], $o['img_own_brand'], $o['img_fba'], $o['hero_image'] ) ) );
+
+/* The small product screens shown for each "How it works" step. */
+$panel = function ( $n ) use ( $i, $city, $qc_imgs ) {
+	if ( 0 === $n ) {
+		echo '<div class="fm-ui"><p class="fm-ui__h"><b>Supplier comparison</b><small>Glass bottle 500 ml · 500 units</small></p>';
+		foreach ( array( array( 'A', 'Factory A', 'Ningbo · audited', '$1.92', 'MOQ 500', true ), array( 'B', 'Factory B', 'Yiwu · audited', '$2.10', 'MOQ 300', false ), array( 'C', 'Factory C', 'Shenzhen', '$1.78', 'MOQ 5,000', false ) ) as $f ) {
+			printf( '<div class="fm-ui__row%s"><span class="fm-ui__av">%s</span><b>%s<small>%s</small></b><span>%s<small>/unit</small></span><span class="fm-ui__moq">%s</span>%s</div>', $f[5] ? ' is-pick' : '', esc_html( $f[0] ), esc_html( $f[1] ), esc_html( $f[2] ), esc_html( $f[3] ), esc_html( $f[4] ), $f[5] ? '<em>Selected</em>' : '<em class="is-off">Compare</em>' );
+		}
+		echo '<p class="fm-ui__foot"><span>Negotiated on your behalf</span><b>−11% vs first offer</b></p></div>';
+	} elseif ( 1 === $n ) {
+		echo '<div class="fm-ui"><p class="fm-ui__h"><b>QC-7731</b><small>500 units · 12 photos</small></p><div class="fm-ui__photos">';
+		foreach ( array_slice( $qc_imgs, 0, 3 ) as $k => $src ) {
+			printf( '<span style="--p:%d%%"><img src="%s" alt="" loading="lazy" decoding="async" width="200" height="200"></span>', 20 + $k * 25, esc_url( $src ) );
+		}
+		echo '</div><ul class="fm-ui__list">';
+		foreach ( array( 'Colour matches sample', 'Size & dimensions', 'Packaging & labels' ) as $c ) {
+			printf( '<li><span>%s</span><b>%s Pass</b></li>', esc_html( $c ), $i( 'check' ) ); // phpcs:ignore
+		}
+		echo '</ul><p class="fm-ui__foot"><span>Result</span><b>Passed · awaiting your approval</b></p></div>';
+	} elseif ( 2 === $n ) {
+		echo '<div class="fm-ui"><p class="fm-ui__h"><b>GB-500-CLR</b><small>Glass bottle 500 ml</small></p>';
+		echo '<div class="fm-ui__big"><small>Available to sell</small><b>2,184</b><span>units · +500 received today</span></div>';
+		echo '<div class="fm-ui__code">' . fm_lp_barcode( 'GB-500-CLR', 240, 40 ) . '<span>GB-500-CLR · LOT 2048</span></div>'; // phpcs:ignore
+		printf( '<div class="fm-ui__split"><p><small>Bin</small><b>%s</b></p><p><small>Shopify</small><b>1,240</b></p><p><small>Amazon</small><b>944</b></p></div></div>', 'A14-03' );
+	} else {
+		printf( '<div class="fm-ui"><p class="fm-ui__h"><b>FM 2048 1193 CN</b><small>%s → Los Angeles · B2C line</small></p>', esc_html( $city ) );
+		printf( '<div class="fm-ui__route"><b>%s</b><i><span>%s</span></i><b>Los Angeles</b></div>', esc_html( $city ), $i( 'plane' ) ); // phpcs:ignore
+		echo '<ol class="fm-ui__track"><li class="ok">Packed</li><li class="ok">Dispatched</li><li class="now">In transit</li><li>Delivered</li></ol>';
+		echo '<div class="fm-ui__split fm-ui__split--ship"><p><small>Service</small><b>B2C special line</b></p><p><small>Parcel</small><b>0.42 kg</b></p><p><small>Last scan</small><b>Export cleared</b></p></div>';
+		echo '<p class="fm-ui__foot"><span>Estimated delivery</span><b>Day 7–15, fully tracked</b></p></div>';
+	}
+};
 
 $faqs = array(
 	array( 'How is pricing worked out?', 'You only pay for what you use: product cost (if we source for you), quality check, prep, storage and shipping per unit dispatched. No hidden fees and no surprise line items at month end. Your free landed-cost quote itemises every line so you know your margin before you commit.' ),
@@ -66,53 +101,122 @@ $faqs = array(
 ?>
 <div class="fm-lp" data-fm-lp>
 
-	<!-- ================= 1. HERO ================= -->
+	<!-- ================= 1. HERO: centred copy on a route map, live dashboard below ================= -->
 	<section class="fm-hero" aria-labelledby="fm-hero-title">
-		<div class="fm-hero__bg" aria-hidden="true"></div>
-		<div class="fm-wrap fm-hero__grid">
-			<div class="fm-hero__copy">
-				<p class="fm-chip fm-rise" style="--d:0"><span class="fm-live"></span> Sourcing · QC · 3PL · FBA prep · Dropshipping</p>
-				<h1 id="fm-hero-title" class="fm-h1 fm-rise" style="--d:1">Source, store and ship from China, with <span class="fm-hl">one team, one dashboard</span> and no surprise costs.</h1>
-				<p class="fm-hero__sub fm-rise" style="--d:2">Sourcing, quality checks, warehousing, Amazon FBA prep, dropshipping and global shipping, all handled by Fulfillmen's own China-based team.</p>
-				<div class="fm-ctas fm-rise" style="--d:3">
-					<a class="fm-btn fm-btn--primary fm-magnetic" href="#quote" data-fm-cta="hero">Get my free landed-cost quote <span class="fm-btn__dot"><?php echo $i( 'arrow' ); // phpcs:ignore ?></span></a>
-					<a class="fm-btn fm-btn--line" href="#how">See how it works</a>
-				</div>
-				<ul class="fm-checks fm-rise" style="--d:4">
-					<li><?php echo $i( 'check' ); // phpcs:ignore ?> Itemised quote in 24 hours</li>
-					<li><?php echo $i( 'check' ); // phpcs:ignore ?> No minimums, no lock-in</li>
-					<li><?php echo $i( 'check' ); // phpcs:ignore ?> Free photo inspection</li>
-				</ul>
+		<svg class="fm-hero__map" data-fm-map viewBox="0 0 <?php echo (int) $map['w']; ?> <?php echo (int) $map['h']; ?>" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+			<defs><path id="fm-land" d="<?php echo esc_attr( $map['dots'] ); ?>"/></defs>
+			<use href="#fm-land" class="fm-map__land"/>
+			<g class="fm-map__routes">
+				<?php foreach ( $routes as $k => $d ) : ?><path id="fmh-<?php echo esc_attr( $k ); ?>" d="<?php echo esc_attr( $d ); ?>"/><?php endforeach; ?>
+			</g>
+			<g class="fm-map__parcels">
+				<?php foreach ( $routes as $k => $d ) : ?><circle r="4.5" data-route="fmh-<?php echo esc_attr( $k ); ?>"/><?php endforeach; ?>
+			</g>
+			<?php foreach ( $routes as $k => $d ) : $c = $map['cities'][ $k ]; ?>
+				<circle class="fm-map__city" cx="<?php echo esc_attr( $c['x'] ); ?>" cy="<?php echo esc_attr( $c['y'] ); ?>" r="4"/>
+			<?php endforeach; ?>
+			<g transform="translate(<?php echo esc_attr( $hub['x'] . ' ' . $hub['y'] ); ?>)" class="fm-map__hub"><circle class="fm-world__ping" r="9"/><circle r="6.5"/></g>
+		</svg>
+
+		<div class="fm-wrap fm-hero__in">
+			<p class="fm-chip fm-rise" style="--d:0"><span class="fm-live"></span> Sourcing · QC · 3PL · FBA prep · Dropshipping</p>
+			<h1 id="fm-hero-title" class="fm-h1 fm-rise" style="--d:1">Source, store and ship from China, with <span class="fm-hl">one team, one dashboard</span> and no surprise costs.</h1>
+			<p class="fm-hero__sub fm-rise" style="--d:2">Sourcing, quality checks, warehousing, Amazon FBA prep, dropshipping and global shipping, all handled by Fulfillmen's own China-based team.</p>
+			<div class="fm-ctas fm-rise" style="--d:3">
+				<a class="fm-btn fm-btn--primary fm-magnetic" href="#quote" data-fm-cta="hero">Get my free landed-cost quote <span class="fm-btn__dot"><?php echo $i( 'arrow' ); // phpcs:ignore ?></span></a>
+				<a class="fm-btn fm-btn--line" href="#how">See how it works</a>
 			</div>
+			<ul class="fm-checks fm-rise" style="--d:4">
+				<li><?php echo $i( 'check' ); // phpcs:ignore ?> Itemised quote in 24 hours</li>
+				<li><?php echo $i( 'check' ); // phpcs:ignore ?> No minimums, no lock-in</li>
+				<li><?php echo $i( 'check' ); // phpcs:ignore ?> Free photo inspection</li>
+			</ul>
+		</div>
 
-			<div class="fm-hero__media fm-rise" style="--d:2" data-fm-media>
-				<figure class="fm-photo">
-					<?php if ( $o['hero_image'] ) : ?>
-						<img src="<?php echo esc_url( $o['hero_image'] ); ?>" alt="Fulfillmen's sourcing and fulfilment team in the warehouse" width="1314" height="767" fetchpriority="high" decoding="async">
-					<?php endif; ?>
-					<figcaption class="fm-photo__pin"><?php echo $i( 'pin' ); // phpcs:ignore ?> <?php echo esc_html( $o['address'] ); ?></figcaption>
-				</figure>
-
-				<div class="fm-fc fm-fc--track" data-depth="1.2" aria-hidden="true">
-					<div class="fm-fc__row"><span class="fm-fc__ic"><?php echo $i( 'truck' ); // phpcs:ignore ?></span><div><small>FM 2048 1193 CN</small><b>In transit · tracked</b></div></div>
-					<ol class="fm-steps-mini"><li class="ok">Dispatched</li><li class="ok">Customs</li><li class="now">In transit</li><li>Delivered</li></ol>
-					<p class="fm-fc__foot"><?php echo esc_html( $proof ); ?></p>
+		<div class="fm-wrap fm-hero__stage fm-rise" style="--d:5">
+			<div class="fm-dash" data-fm-dash role="img" aria-label="Example of the Fulfillmen client dashboard: orders, quality checks, stock and shipments in one place">
+				<div class="fm-dash__top">
+					<span class="fm-dash__dots"><i></i><i></i><i></i></span>
+					<span class="fm-dash__brand"><b>f</b> fulfillmen</span>
+					<span class="fm-dash__tabs"><b>Overview</b><span>Orders</span><span>Inventory</span><span>Shipments</span><span>QC reports</span></span>
+					<span class="fm-dash__search"><?php echo $i( 'search' ); // phpcs:ignore ?> Search SKU, order or tracking no.</span>
+					<span class="fm-dash__av">JS</span>
 				</div>
-				<div class="fm-fc fm-fc--qc" data-depth="0.8" aria-hidden="true">
-					<div class="fm-fc__row"><span class="fm-fc__ic fm-fc__ic--ok"><?php echo $i( 'check' ); // phpcs:ignore ?></span><div><small>Pre-shipment QC</small><b>Passed · 12 photos</b></div></div>
-					<div class="fm-fc__thumbs"><i></i><i></i><i></i><i></i></div>
-				</div>
-				<div class="fm-fc fm-fc--cost" data-depth="1.6" aria-hidden="true">
-					<small>Landed cost / unit <em>Example</em></small>
-					<b>$<span data-fm-count="4.82" data-fm-dec="2">4.82</span></b>
-					<ul><li><span>Product</span><span>$3.10</span></li><li><span>QC + prep</span><span>$0.20</span></li><li><span>Shipping</span><span>$1.52</span></li></ul>
+				<div class="fm-dash__body">
+					<div class="fm-dash__hello">
+						<div><small>Overview · updated just now</small><b>Good morning, Jane</b></div>
+						<span class="fm-dash__tag">Sample data</span>
+					</div>
+					<div class="fm-dash__kpis">
+						<?php
+						foreach ( array(
+							array( 'bag', 'Orders today', '1,284', '+12% vs last week', '0,22 10,18 20,20 30,12 40,14 50,8 60,6' ),
+							array( 'camera', 'In quality check', '46', '12 photos per SKU', '0,14 10,16 20,10 30,14 40,9 50,12 60,8' ),
+							array( 'truck', 'In transit', '318', '7–15 days door-to-door', '0,20 10,16 20,17 30,11 40,12 50,7 60,4' ),
+							array( 'box', 'Landed cost / unit', '$4.82', 'All-in, itemised', '0,10 10,12 20,11 30,13 40,12 50,14 60,13' ),
+						) as $k ) :
+							?>
+							<div class="fm-dash__kpi">
+								<span class="fm-dash__ki"><?php echo $i( $k[0] ); // phpcs:ignore ?></span>
+								<small><?php echo esc_html( $k[1] ); ?></small>
+								<b><?php echo esc_html( $k[2] ); ?></b>
+								<em><?php echo esc_html( $k[3] ); ?></em>
+								<svg class="fm-dash__spark" viewBox="0 0 60 24" preserveAspectRatio="none"><polyline points="<?php echo esc_attr( $k[4] ); ?>"/></svg>
+							</div>
+						<?php endforeach; ?>
+					</div>
+					<div class="fm-dash__grid">
+						<div class="fm-dash__card fm-dash__map">
+							<div class="fm-dash__ch"><b>Live shipments</b><span><i class="fm-live"></i> 318 in transit</span></div>
+							<svg viewBox="140 70 980 430" preserveAspectRatio="xMidYMid meet">
+								<use href="#fm-land" class="fm-map__land"/>
+								<g class="fm-dash__routes"><?php foreach ( $routes as $d ) : ?><path d="<?php echo esc_attr( $d ); ?>"/><?php endforeach; ?></g>
+								<?php foreach ( $routes as $k => $d ) : $c = $map['cities'][ $k ]; ?><circle class="fm-map__city" cx="<?php echo esc_attr( $c['x'] ); ?>" cy="<?php echo esc_attr( $c['y'] ); ?>" r="6"/><?php endforeach; ?>
+								<g transform="translate(<?php echo esc_attr( $hub['x'] . ' ' . $hub['y'] ); ?>)" class="fm-map__hub"><circle class="fm-world__ping" r="11"/><circle r="8"/></g>
+							</svg>
+							<ul class="fm-dash__legend"><li><i></i>B2C special line</li><li><i></i>Air freight</li><li><i></i>Sea to FBA</li></ul>
+						</div>
+						<div class="fm-dash__card fm-dash__qc">
+							<div class="fm-dash__ch"><b>QC-7731 · 500 units</b><span class="fm-pill fm-pill--ok">Passed</span></div>
+							<div class="fm-dash__photos">
+								<?php foreach ( array_slice( $qc_imgs, 0, 4 ) as $n => $src ) : ?>
+									<span style="--p:<?php echo (int) ( 20 + $n * 22 ); ?>%"><img src="<?php echo esc_url( $src ); ?>" alt="" loading="lazy" decoding="async" width="160" height="160"></span>
+								<?php endforeach; ?>
+							</div>
+							<ul class="fm-dash__checks">
+								<li><?php echo $i( 'check' ); // phpcs:ignore ?> Colour matches sample</li>
+								<li><?php echo $i( 'check' ); // phpcs:ignore ?> Size &amp; dimensions</li>
+								<li><?php echo $i( 'check' ); // phpcs:ignore ?> Labels &amp; packaging</li>
+							</ul>
+							<span class="fm-dash__btn">Approve dispatch</span>
+						</div>
+						<div class="fm-dash__card fm-dash__table">
+							<div class="fm-dash__ch"><b>Recent shipments</b><span>View all</span></div>
+							<?php
+							foreach ( array(
+								array( 'FM 2048 1193', 'Los Angeles, US', 'B2C line', 'In transit', 'go' ),
+								array( 'FM 2048 1187', 'London, UK', 'Air', 'Customs', 'wait' ),
+								array( 'FM 2048 1176', 'Sydney, AU', 'B2C line', 'Delivered', 'ok' ),
+								array( 'FBA 0931', 'Amazon FBA, US', 'Sea', 'Booked', 'new' ),
+							) as $r ) :
+								?>
+								<div class="fm-dash__row"><b><?php echo esc_html( $r[0] ); ?></b><span><?php echo esc_html( $r[1] ); ?></span><span><?php echo esc_html( $r[2] ); ?></span><span class="fm-pill fm-pill--<?php echo esc_attr( $r[4] ); ?>"><?php echo esc_html( $r[3] ); ?></span></div>
+							<?php endforeach; ?>
+						</div>
+						<div class="fm-dash__card fm-dash__inv">
+							<div class="fm-dash__ch"><b>Stock · <?php echo esc_html( $city ); ?></b><span>4 SKUs</span></div>
+							<?php foreach ( array( array( 'Glass bottle 500 ml', '2,184', 82 ), array( 'Yoga mat, cork', '1,420', 58 ), array( 'Phone case, matte', '960', 40 ), array( 'Desk lamp, LED', '310', 14 ) ) as $s ) : ?>
+								<div class="fm-dash__bar<?php echo $s[2] < 20 ? ' is-low' : ''; ?>"><span><?php echo esc_html( $s[0] ); ?></span><b><?php echo esc_html( $s[1] ); ?></b><i style="--w:<?php echo (int) $s[2]; ?>%"></i></div>
+							<?php endforeach; ?>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
 
 		<div class="fm-wrap">
 			<?php if ( $logos ) : ?>
-				<div class="fm-logos fm-rise" style="--d:5">
+				<div class="fm-logos">
 					<p>Built for sellers on</p>
 					<div class="fm-logos__row">
 						<?php foreach ( $logos as $l ) : ?>
@@ -122,7 +226,7 @@ $faqs = array(
 				</div>
 			<?php endif; ?>
 
-			<dl class="fm-kpis fm-rise" style="--d:6">
+			<dl class="fm-kpis">
 				<div><dt>Door-to-door, fully tracked</dt><dd>7–15<span> days</span></dd></div>
 				<div><dt>To get your itemised quote</dt><dd>24<span> h</span></dd></div>
 				<?php foreach ( array_slice( $stats, 0, 2 ) as $s ) : ?>
@@ -132,44 +236,52 @@ $faqs = array(
 		</div>
 	</section>
 
-	<!-- ================= 2. PICK YOUR PATH ================= -->
-	<section class="fm-section fm-mint fm-paths" id="path" aria-labelledby="fm-path-title">
+	<!-- ================= 2. PICK YOUR PATH: cards fan out on scroll ================= -->
+	<section class="fm-section fm-paths" id="path" aria-labelledby="fm-path-title">
 		<div class="fm-wrap">
-			<div class="fm-head fm-head--split">
-				<div>
-					<p class="fm-kicker fm-reveal">Pick your path</p>
-					<h2 id="fm-path-title" class="fm-h2 fm-reveal">How do you sell?</h2>
-				</div>
+			<div class="fm-head fm-head--center">
+				<p class="fm-kicker fm-reveal">Pick your path</p>
+				<h2 id="fm-path-title" class="fm-h2 fm-reveal">How do you sell?</h2>
 				<p class="fm-reveal">Choose one. Your quote is built around your business model, and the right specialist replies.</p>
 			</div>
 
-			<div class="fm-pathcards">
-				<?php foreach ( $paths as $key => $p ) : ?>
-					<a class="fm-pathcard fm-reveal<?php echo $pre === $key ? ' is-selected' : ''; ?>" href="?path=<?php echo esc_attr( $key ); ?>#quote" data-fm-path="<?php echo esc_attr( $key ); ?>">
-						<span class="fm-pathcard__img">
-							<?php if ( $p[5] ) : ?>
-								<img src="<?php echo esc_url( $p[5] ); ?>" alt="" loading="lazy" decoding="async" width="800" height="500">
-							<?php endif; ?>
-							<span class="fm-pathcard__tag"><?php echo esc_html( $p[0] ); ?></span>
-							<span class="fm-pathcard__check" aria-hidden="true"><?php echo $i( 'check' ); // phpcs:ignore ?></span>
-						</span>
-						<span class="fm-pathcard__body">
-							<h3><?php echo esc_html( $p[1] ); ?></h3>
-							<p><?php echo esc_html( $p[2] ); ?></p>
-							<ul>
-								<?php foreach ( $p[3] as $li ) : ?>
-									<li><?php echo $i( 'check' ); // phpcs:ignore ?> <?php echo esc_html( $li ); ?></li>
-								<?php endforeach; ?>
-							</ul>
-							<span class="fm-pathcard__cta"><?php echo esc_html( $p[4] ); ?> <?php echo $i( 'arrow' ); // phpcs:ignore ?></span>
-						</span>
-					</a>
-				<?php endforeach; ?>
+			<div class="fm-fan" data-fm-fan>
+				<span class="fm-fan__glow" aria-hidden="true"></span>
+				<?php
+				$n = -1;
+				foreach ( $paths as $key => $p ) :
+					?>
+					<div class="fm-fan__slot" style="--i:<?php echo (int) $n; ?>">
+						<a class="fm-pathcard<?php echo $pre === $key ? ' is-selected' : ''; ?>" href="?path=<?php echo esc_attr( $key ); ?>#quote" data-fm-path="<?php echo esc_attr( $key ); ?>">
+							<span class="fm-pathcard__img">
+								<?php if ( $p[5] ) : ?>
+									<img src="<?php echo esc_url( $p[5] ); ?>" alt="" loading="lazy" decoding="async" width="800" height="500">
+								<?php endif; ?>
+								<span class="fm-pathcard__ic"><?php echo $i( $p[6] ); // phpcs:ignore ?></span>
+								<span class="fm-pathcard__check" aria-hidden="true"><?php echo $i( 'check' ); // phpcs:ignore ?></span>
+							</span>
+							<span class="fm-pathcard__body">
+								<span class="fm-pathcard__tag"><?php echo esc_html( $p[0] ); ?></span>
+								<h3><?php echo esc_html( $p[1] ); ?></h3>
+								<p><?php echo esc_html( $p[2] ); ?></p>
+								<ul>
+									<?php foreach ( $p[3] as $li ) : ?>
+										<li><?php echo $i( 'check' ); // phpcs:ignore ?> <?php echo esc_html( $li ); ?></li>
+									<?php endforeach; ?>
+								</ul>
+								<span class="fm-pathcard__cta"><?php echo esc_html( $p[4] ); ?> <?php echo $i( 'arrow' ); // phpcs:ignore ?></span>
+							</span>
+						</a>
+					</div>
+					<?php
+					$n++;
+				endforeach;
+				?>
 			</div>
 		</div>
 	</section>
 
-	<!-- ================= 3. HOW IT WORKS ================= -->
+	<!-- ================= 3. HOW IT WORKS: steps + live screen ================= -->
 	<section class="fm-section fm-how" id="how" aria-labelledby="fm-how-title">
 		<div class="fm-wrap">
 			<div class="fm-head fm-head--split">
@@ -180,70 +292,111 @@ $faqs = array(
 				<p class="fm-reveal">One team handles the whole line. No agent here and 3PL there, so nothing gets lost between companies and every cost is on one invoice.</p>
 			</div>
 
-			<div class="fm-line" data-fm-line>
-				<div class="fm-line__belt" aria-hidden="true">
-					<span class="fm-line__rail"><i class="fm-line__fill"></i></span>
-					<span class="fm-line__box" data-fm-box>
-						<svg viewBox="0 0 64 56">
-							<path class="b-side" d="M6 18 32 30v24L6 42z"/><path class="b-front" d="M58 18 32 30v24l26-12z"/><path class="b-top" d="M6 18 32 6l26 12-26 12z"/>
-							<path class="b-tape" d="M19 12l26 12"/>
-							<rect class="b-qc" x="38" y="34" width="12" height="8" rx="1.5"/>
-							<rect class="b-label" x="12" y="30" width="12" height="9" rx="1"/>
-						</svg>
-					</span>
-				</div>
-				<ol class="fm-line__stations">
+			<div class="fm-flow" data-fm-flow>
+				<ol class="fm-flow__steps">
+					<li class="fm-flow__rail" aria-hidden="true"><i data-fm-flow-fill></i></li>
 					<?php foreach ( $steps as $n => $s ) : ?>
-						<li class="fm-station">
-							<span class="fm-station__no"><?php echo esc_html( sprintf( '%02d', $n + 1 ) ); ?></span>
-							<span class="fm-station__ic"><?php echo $i( $s[0] ); // phpcs:ignore ?></span>
-							<h3><?php echo esc_html( $s[1] ); ?></h3>
-							<p><?php echo esc_html( $s[2] ); ?></p>
+						<li class="fm-flow__step<?php echo 0 === $n ? ' is-on' : ''; ?>" data-fm-step="<?php echo (int) $n; ?>">
+							<span class="fm-flow__no"><?php echo esc_html( sprintf( '%02d', $n + 1 ) ); ?></span>
+							<div class="fm-flow__txt">
+								<span class="fm-flow__ic"><?php echo $i( $s[0] ); // phpcs:ignore ?></span>
+								<h3><?php echo esc_html( $s[1] ); ?></h3>
+								<p><?php echo esc_html( $s[2] ); ?></p>
+								<span class="fm-flow__get"><?php echo $i( 'check' ); // phpcs:ignore ?> You get: <?php echo esc_html( $s[3] ); ?></span>
+								<div class="fm-flow__inline" aria-hidden="true"><?php $panel( $n ); ?></div>
+							</div>
 						</li>
 					<?php endforeach; ?>
 				</ol>
+				<div class="fm-flow__stage" aria-hidden="true">
+					<div class="fm-flow__screen">
+						<div class="fm-flow__bar"><span class="fm-dash__dots"><i></i><i></i><i></i></span><span data-fm-flow-label><?php echo esc_html( $steps[0][1] ); ?></span></div>
+						<?php foreach ( $steps as $n => $s ) : ?>
+							<div class="fm-flow__panel<?php echo 0 === $n ? ' is-on' : ''; ?>" data-fm-panel="<?php echo (int) $n; ?>" data-label="<?php echo esc_attr( $s[1] ); ?>"><?php $panel( $n ); ?></div>
+						<?php endforeach; ?>
+					</div>
+				</div>
 			</div>
 			<div class="fm-center fm-reveal"><a class="fm-btn fm-btn--primary" href="#quote" data-fm-cta="how">Get my free landed-cost quote <span class="fm-btn__dot"><?php echo $i( 'arrow' ); // phpcs:ignore ?></span></a></div>
 		</div>
 	</section>
 
-	<!-- ================= 4. OFFER B ================= -->
-	<section class="fm-section fm-dark fm-offer" id="inspection" aria-labelledby="fm-offer-title">
-		<div class="fm-wrap fm-offer__grid">
-			<div class="fm-report fm-reveal" aria-hidden="true">
-				<div class="fm-report__head">
-					<div><small>PRE-SHIPMENT PHOTO INSPECTION</small><b>Report QC-7731</b></div>
-					<span>PO 2048 · 500 units</span>
+	<!-- ================= 4. OFFER B: inspection bento ================= -->
+	<section class="fm-section fm-offer" id="inspection" aria-labelledby="fm-offer-title">
+		<div class="fm-wrap">
+			<div class="fm-head fm-head--split">
+				<div>
+					<p class="fm-kicker fm-reveal">Free on your first order</p>
+					<h2 id="fm-offer-title" class="fm-h2 fm-reveal">See it before your customers do.</h2>
 				</div>
-				<div class="fm-report__photos">
-					<?php for ( $k = 1; $k <= 6; $k++ ) : ?>
-						<figure class="fm-polaroid" style="--k:<?php echo (int) $k; ?>"><span class="fm-polaroid__img"></span><figcaption>IMG_00<?php echo (int) $k; ?></figcaption></figure>
-					<?php endfor; ?>
-				</div>
-				<ul class="fm-report__list">
-					<li><span>Colour matches approved sample</span><b><?php echo $i( 'check' ); // phpcs:ignore ?> Pass</b></li>
-					<li><span>Size &amp; dimensions</span><b><?php echo $i( 'check' ); // phpcs:ignore ?> Pass</b></li>
-					<li><span>Logo &amp; print quality</span><b><?php echo $i( 'check' ); // phpcs:ignore ?> Pass</b></li>
-					<li><span>Packaging &amp; labels</span><b><?php echo $i( 'check' ); // phpcs:ignore ?> Pass</b></li>
-				</ul>
-				<div class="fm-report__sign"><span>Inspector · <?php echo esc_html( $city ); ?> warehouse</span><span>Awaiting your approval</span></div>
-				<span class="fm-stamp fm-stamp--ok" data-fm-stamp>APPROVED</span>
+				<p class="fm-reveal">Before anything ships, we photograph your products so you know exactly what your customers will receive.</p>
 			</div>
-			<div class="fm-offer__copy">
-				<p class="fm-kicker fm-kicker--light fm-reveal">Free on your first order</p>
-				<h2 id="fm-offer-title" class="fm-h2 fm-reveal">See it before your customers do.</h2>
-				<p class="fm-lead fm-reveal">Before anything ships, we photograph your products so you know exactly what your customers will receive.</p>
-				<ul class="fm-ticks fm-reveal">
-					<li><?php echo $i( 'check' ); // phpcs:ignore ?> Real photos from our warehouse floor, not supplier renders</li>
-					<li><?php echo $i( 'check' ); // phpcs:ignore ?> You approve before anything is dispatched</li>
-					<li><?php echo $i( 'check' ); // phpcs:ignore ?> Problems fixed in China, not after refunds</li>
-				</ul>
-				<a class="fm-btn fm-btn--white fm-reveal" href="#quote" data-fm-cta="offer">Claim it with my free quote <span class="fm-btn__dot"><?php echo $i( 'arrow' ); // phpcs:ignore ?></span></a>
+
+			<div class="fm-bento fm-bento--offer">
+				<div class="fm-bcard fm-bcard--report fm-reveal">
+					<div class="fm-report">
+						<div class="fm-report__head">
+							<div><small>PRE-SHIPMENT PHOTO INSPECTION</small><b>Report QC-7731</b></div>
+							<span>PO 2048 · 500 units</span>
+						</div>
+						<div class="fm-report__photos">
+							<?php foreach ( $qc_imgs as $k => $src ) : ?>
+								<figure class="fm-polaroid" style="--k:<?php echo (int) ( $k + 1 ); ?>;--p:<?php echo (int) ( 15 + $k * 14 ); ?>%"><span class="fm-polaroid__img"><img src="<?php echo esc_url( $src ); ?>" alt="" loading="lazy" decoding="async" width="240" height="240"></span><figcaption>IMG_00<?php echo (int) ( $k + 1 ); ?></figcaption></figure>
+							<?php endforeach; ?>
+						</div>
+						<ul class="fm-report__list">
+							<li><span>Colour matches approved sample</span><b><?php echo $i( 'check' ); // phpcs:ignore ?> Pass</b></li>
+							<li><span>Size &amp; dimensions</span><b><?php echo $i( 'check' ); // phpcs:ignore ?> Pass</b></li>
+							<li><span>Logo &amp; print quality</span><b><?php echo $i( 'check' ); // phpcs:ignore ?> Pass</b></li>
+							<li><span>Packaging &amp; labels</span><b><?php echo $i( 'check' ); // phpcs:ignore ?> Pass</b></li>
+						</ul>
+						<div class="fm-report__sign"><span>Inspector · <?php echo esc_html( $city ); ?> warehouse</span><span>Awaiting your approval</span></div>
+						<span class="fm-stamp fm-stamp--ok" data-fm-stamp>APPROVED</span>
+					</div>
+				</div>
+
+				<div class="fm-bcard fm-bcard--photos fm-reveal">
+					<span class="fm-bcard__ic"><?php echo $i( 'camera' ); // phpcs:ignore ?></span>
+					<h3>Real photos, not renders</h3>
+					<p>Shot on our warehouse floor, of the exact batch that will ship.</p>
+					<div class="fm-bcard__stack" aria-hidden="true">
+						<?php foreach ( array_slice( $qc_imgs, 0, 3 ) as $k => $src ) : ?><img src="<?php echo esc_url( $src ); ?>" alt="" loading="lazy" decoding="async" width="160" height="160" style="--k:<?php echo (int) $k; ?>"><?php endforeach; ?>
+					</div>
+				</div>
+
+				<div class="fm-bcard fm-bcard--approve fm-reveal">
+					<span class="fm-bcard__ic"><?php echo $i( 'shield' ); // phpcs:ignore ?></span>
+					<h3>You approve before dispatch</h3>
+					<div class="fm-approve" aria-hidden="true">
+						<p><b>QC-7731 is ready</b><small>500 units · 4 checks passed</small></p>
+						<span class="fm-approve__yes"><?php echo $i( 'check' ); // phpcs:ignore ?> Approve</span>
+						<span class="fm-approve__no">Request a fix</span>
+					</div>
+				</div>
+
+				<div class="fm-bcard fm-bcard--fix fm-reveal">
+					<div>
+						<span class="fm-bcard__ic"><?php echo $i( 'bolt' ); // phpcs:ignore ?></span>
+						<h3>Problems fixed in China, not after refunds</h3>
+						<p>If anything is off, you see it with photos and we fix it before it leaves the building.</p>
+					</div>
+					<ol class="fm-fixline" aria-label="Example of a fix">
+						<li class="is-bad"><small>Found</small><b>Label misprint on 40 units</b></li>
+						<li><small>Fixed</small><b>Re-labelled in <?php echo esc_html( $city ); ?></b></li>
+						<li class="is-ok"><small>Shipped</small><b>Approved, 0 returns</b></li>
+					</ol>
+				</div>
+
+				<div class="fm-bcard fm-bcard--cta fm-reveal">
+					<p class="fm-bcard__big">Free</p>
+					<p>On your first order, with your landed-cost quote.</p>
+					<a class="fm-btn fm-btn--white" href="#quote" data-fm-cta="offer">Claim it <span class="fm-btn__dot"><?php echo $i( 'arrow' ); // phpcs:ignore ?></span></a>
+				</div>
 			</div>
 		</div>
 	</section>
 
-	<!-- ================= 5. PROOF ================= -->
+	<!-- ================= 5. PROOF: bento ================= -->
 	<section class="fm-section fm-proof" id="proof" aria-labelledby="fm-proof-title">
 		<div class="fm-wrap">
 			<div class="fm-head fm-head--split">
@@ -254,19 +407,24 @@ $faqs = array(
 				<p class="fm-reveal">Numbers from our own operation, and the delivery promise we put in writing.</p>
 			</div>
 
-			<?php if ( $stats ) : ?>
-				<dl class="fm-manifest">
-					<?php foreach ( $stats as $n => $s ) : ?>
-						<div class="fm-manifest__row fm-reveal">
-							<dd><span data-fm-count="<?php echo esc_attr( $s[0] ); ?>" data-fm-dec="<?php echo false !== strpos( $s[0], '.' ) ? 1 : 0; ?>"><?php echo esc_html( $s[0] ); ?></span><?php echo esc_html( $s[1] ); ?></dd>
+			<div class="fm-bento fm-bento--proof">
+				<?php foreach ( $stats as $n => $s ) : ?>
+					<div class="fm-bcard fm-stat fm-reveal">
+						<dl>
+							<dd><span data-fm-count="<?php echo esc_attr( $s[0] ); ?>" data-fm-dec="<?php echo false !== strpos( $s[0], '.' ) ? 1 : 0; ?>"><?php echo esc_html( $s[0] ); ?></span><em><?php echo esc_html( $s[1] ); ?></em></dd>
 							<dt><?php echo esc_html( $s[2] ); ?></dt>
-						</div>
-					<?php endforeach; ?>
-				</dl>
-			<?php endif; ?>
+						</dl>
+						<?php if ( 0 === $n ) : ?>
+							<div class="fm-stat__bars" aria-hidden="true"><p><span>Industry average</span><i style="--w:40%"></i></p><p class="is-us"><span>Fulfillmen</span><i style="--w:100%"></i></p></div>
+						<?php elseif ( 1 === $n ) : ?>
+							<div class="fm-stat__bars" aria-hidden="true"><p><span>Typical carrier rate</span><i style="--w:100%"></i></p><p class="is-us"><span>Fulfillmen</span><i style="--w:80%"></i></p></div>
+						<?php else : ?>
+							<div class="fm-stat__ticks" aria-hidden="true"><?php echo str_repeat( '<i></i>', 20 ); // phpcs:ignore ?></div>
+						<?php endif; ?>
+					</div>
+				<?php endforeach; ?>
 
-			<div class="fm-proof__grid">
-				<div class="fm-tracking fm-reveal">
+				<div class="fm-bcard fm-tracking fm-reveal">
 					<div class="fm-tracking__head">
 						<div><small>TRACKING</small><b>FM 2048 1193 CN</b></div>
 						<span class="fm-st">Delivered</span>
@@ -281,7 +439,7 @@ $faqs = array(
 					</ol>
 				</div>
 
-				<div class="fm-vs fm-reveal">
+				<div class="fm-bcard fm-vs fm-reveal">
 					<p class="fm-vs__title">One team vs an agent plus a separate 3PL</p>
 					<div role="table" aria-label="Fulfillmen compared with a sourcing agent plus a separate 3PL">
 						<div class="fm-vs__row fm-vs__row--h" role="row"><span role="columnheader"></span><span role="columnheader">Agent + 3PL</span><span role="columnheader">Fulfillmen</span></div>
@@ -341,48 +499,47 @@ $faqs = array(
 		</div>
 	</section>
 
-	<!-- ================= 6. QUOTE FORM ================= -->
-	<section class="fm-section fm-dark fm-quote" id="quote" aria-labelledby="fm-quote-title">
-		<svg class="fm-world" viewBox="0 0 <?php echo (int) $map['w']; ?> <?php echo (int) $map['h']; ?>" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
-			<path class="fm-world__land" d="<?php echo esc_attr( $map['dots'] ); ?>"/>
-			<g class="fm-world__routes">
-				<?php foreach ( $routes as $k => $d ) : ?><path id="fmq-<?php echo esc_attr( $k ); ?>" d="<?php echo esc_attr( $d ); ?>"/><?php endforeach; ?>
-			</g>
-			<g class="fm-world__parcels">
-				<?php foreach ( $routes as $k => $d ) : ?><circle r="3.2" data-route="fmq-<?php echo esc_attr( $k ); ?>"/><?php endforeach; ?>
-			</g>
-			<g transform="translate(<?php echo esc_attr( $hub['x'] . ' ' . $hub['y'] ); ?>)" class="fm-world__hub"><circle class="fm-world__ping" r="7"/><circle r="5"/></g>
-		</svg>
-		<div class="fm-wrap fm-quote__grid">
-			<div class="fm-quote__copy">
-				<p class="fm-kicker fm-kicker--light fm-reveal">Free landed-cost quote</p>
-				<h2 id="fm-quote-title" class="fm-h2 fm-reveal">Know your real cost per unit in 24&nbsp;hours.</h2>
-				<p class="fm-lead fm-reveal">Send your product or store link. We reply within 24 hours with full pricing, line by line.</p>
+	<!-- ================= 6. QUOTE FORM: split card ================= -->
+	<section class="fm-section fm-quote" id="quote" aria-labelledby="fm-quote-title">
+		<div class="fm-wrap">
+			<div class="fm-quote__card">
+				<div class="fm-quote__side">
+					<svg class="fm-quote__map" data-fm-map viewBox="0 0 <?php echo (int) $map['w']; ?> <?php echo (int) $map['h']; ?>" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+						<use href="#fm-land" class="fm-map__land"/>
+						<g class="fm-map__routes"><?php foreach ( $routes as $k => $d ) : ?><path id="fmq-<?php echo esc_attr( $k ); ?>" d="<?php echo esc_attr( $d ); ?>"/><?php endforeach; ?></g>
+						<g class="fm-map__parcels"><?php foreach ( $routes as $k => $d ) : ?><circle r="4" data-route="fmq-<?php echo esc_attr( $k ); ?>"/><?php endforeach; ?></g>
+						<g transform="translate(<?php echo esc_attr( $hub['x'] . ' ' . $hub['y'] ); ?>)" class="fm-map__hub"><circle class="fm-world__ping" r="8"/><circle r="6"/></g>
+					</svg>
+					<div class="fm-quote__copy">
+						<p class="fm-kicker fm-kicker--light fm-reveal">Free landed-cost quote</p>
+						<h2 id="fm-quote-title" class="fm-h2 fm-reveal">Know your real cost per unit in 24&nbsp;hours.</h2>
+						<p class="fm-lead fm-reveal">Send your product or store link. We reply within 24 hours with full pricing, line by line.</p>
 
-				<div class="fm-receipt fm-reveal" aria-label="What your quote includes">
-					<div class="fm-receipt__h"><b>Your quote includes</b><span><?php echo $i( 'clock' ); // phpcs:ignore ?> Reply ≤ 24 h</span></div>
-					<ul>
-						<li><span>Product cost</span><i></i></li>
-						<li><span>Quality check</span><i></i></li>
-						<li><span>Prep &amp; labelling</span><i></i></li>
-						<li><span>Warehousing</span><i></i></li>
-						<li><span>Shipping to customer / Amazon</span><i></i></li>
-					</ul>
-					<div class="fm-receipt__t"><span>Landed cost per unit</span><b>No surprises</b></div>
+						<div class="fm-receipt fm-reveal" aria-label="What your quote includes">
+							<div class="fm-receipt__h"><b>Your quote includes</b><span><?php echo $i( 'clock' ); // phpcs:ignore ?> Reply ≤ 24 h</span></div>
+							<ul>
+								<li><span>Product cost</span><i></i></li>
+								<li><span>Quality check</span><i></i></li>
+								<li><span>Prep &amp; labelling</span><i></i></li>
+								<li><span>Warehousing</span><i></i></li>
+								<li><span>Shipping to customer / Amazon</span><i></i></li>
+							</ul>
+							<div class="fm-receipt__t"><span>Landed cost per unit</span><b>No surprises</b></div>
+						</div>
+
+						<ul class="fm-ticks fm-ticks--sm fm-reveal">
+							<li><?php echo $i( 'check' ); // phpcs:ignore ?> <?php echo esc_html( $proof ); ?></li>
+							<li><?php echo $i( 'check' ); // phpcs:ignore ?> Free photo inspection on your first order</li>
+							<li><?php echo $i( 'check' ); // phpcs:ignore ?> Trusted by Amazon, Shopify and eBay sellers</li>
+						</ul>
+					</div>
 				</div>
 
-				<ul class="fm-ticks fm-ticks--sm fm-reveal">
-					<li><?php echo $i( 'check' ); // phpcs:ignore ?> <?php echo esc_html( $proof ); ?></li>
-					<li><?php echo $i( 'check' ); // phpcs:ignore ?> Free photo inspection on your first order</li>
-					<li><?php echo $i( 'check' ); // phpcs:ignore ?> Trusted by Amazon, Shopify and eBay sellers</li>
-				</ul>
-			</div>
-
-			<div class="fm-formdoc fm-reveal">
-				<div class="fm-formdoc__head">
-					<div><small>QUOTE REQUEST</small><b>Free landed-cost quote</b></div>
-					<?php echo fm_lp_barcode( 'QUOTE', 110, 30 ); // phpcs:ignore ?>
-				</div>
+				<div class="fm-formdoc">
+					<div class="fm-formdoc__head">
+						<div><small>QUOTE REQUEST</small><b>Free landed-cost quote</b></div>
+						<?php echo fm_lp_barcode( 'QUOTE', 110, 30 ); // phpcs:ignore ?>
+					</div>
 				<form class="fm-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" novalidate data-fm-form>
 					<input type="hidden" name="action" value="fm_quote">
 					<input type="hidden" name="lead_type" value="<?php echo esc_attr( $pre ); ?>" data-fm-lead-type>
@@ -446,6 +603,7 @@ $faqs = array(
 						<p class="fm-form__wa"><a href="https://wa.me/<?php echo esc_attr( $wa ); ?>" target="_blank" rel="noopener" data-fm-cta="whatsapp"><?php echo $i( 'chat' ); // phpcs:ignore ?> Prefer WhatsApp? Message our team</a></p>
 					<?php endif; ?>
 				</form>
+				</div>
 			</div>
 		</div>
 	</section>
