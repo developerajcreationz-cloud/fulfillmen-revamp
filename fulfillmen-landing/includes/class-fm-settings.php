@@ -56,6 +56,13 @@ class FM_LP_Settings {
 				'warehouse_media' => array( 'Warehouse photos / video', 'textarea', 'One URL per line (.jpg/.webp/.png or .mp4). Videos lazy-load. Hidden from visitors until filled.' ),
 				'load_fonts'      => array( 'Load Archivo + JetBrains Mono from Google Fonts', 'checkbox', 'Untick if your theme already loads them.' ),
 			),
+			'Photography'       => array(
+				'hero_image'       => array( 'Hero photo', 'url', 'Real team / warehouse photo, landscape, ideally a ~1400px WebP under 200 KB.' ),
+				'img_fba'          => array( 'Path card photo: Amazon FBA', 'url', '' ),
+				'img_dropshipping' => array( 'Path card photo: Dropshipping', 'url', '' ),
+				'img_own_brand'    => array( 'Path card photo: Own stock', 'url', '' ),
+				'platform_logos'   => array( 'Platform logos', 'textarea', 'One per line: image URL | name' ),
+			),
 		);
 	}
 

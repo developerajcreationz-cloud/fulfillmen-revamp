@@ -24,7 +24,13 @@ function fm_lp_defaults() {
 		'whatsapp'          => '',
 		'logo_url'          => 'https://fulfillmen.com/wp-content/uploads/2025/04/logo-png.png',
 		'address'           => 'Huizhou, Guangdong, China',
-		'privacy_url'       => '/privacy-policy/',
+		'privacy_url'       => '/privacy-policies/',
+		// Fulfillmen's own photography (already on fulfillmen.com). Replace in settings any time.
+		'hero_image'        => 'https://fulfillmen.com/wp-content/uploads/2026/05/Fulfillmen-China-sourcing-and-fulfillment-team-e1779592427124.webp',
+		'img_fba'           => 'https://fulfillmen.com/wp-content/uploads/2026/03/hero-image-fulfillmen-02-e1773486767922.webp',
+		'img_dropshipping'  => 'https://fulfillmen.com/wp-content/uploads/2026/06/reviewing-supplier-incoterms-purchase.webp',
+		'img_own_brand'     => 'https://fulfillmen.com/wp-content/uploads/2026/06/hero-image-fulfillmen-1-03-e1776.webp',
+		'platform_logos'    => "https://fulfillmen.com/wp-content/uploads/2026/04/sys_amazon.png|Amazon\nhttps://fulfillmen.com/wp-content/uploads/2026/04/sys_shopify.png|Shopify\nhttps://fulfillmen.com/wp-content/uploads/2026/04/sys_ebay.png|eBay\nhttps://fulfillmen.com/wp-content/uploads/2026/04/sys_woo.png|WooCommerce\nhttps://fulfillmen.com/wp-content/uploads/2026/04/sys_etsy.png|Etsy\nhttps://fulfillmen.com/wp-content/uploads/2026/04/sys_lazada.png|Lazada",
 		// value|suffix|label  (numbers taken from the current fulfillmen.com homepage).
 		'stats'             => "2.5|×|Faster dispatch than industry average\n20|%|Lower shipping costs vs typical carrier rates\n20|+|Years fulfilling globally",
 		// Name | Store type | Result | Quote   — leave empty until the client supplies real ones.

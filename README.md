@@ -4,30 +4,20 @@ A conversion-focused, animated quote landing page for fulfillmen.com, built from
 
 **Stack:** a WordPress plugin. PHP renders the pages on the server and vanilla JS handles the behaviour. Lenis 1.1 provides smooth scrolling and GSAP 3.13 + ScrollTrigger run the animations; both are bundled locally. It is not a static HTML page. It runs on any Hostinger WordPress plan with PHP 7.4+ and WordPress 6.2+, and it works with Elementor, block themes and LiteSpeed Cache. There is no build step.
 
-## Design direction (v3: logistics premium)
+## Design (v4)
 
-The look is built from the trade's own artifacts, so it reads as a premium China-fulfilment brand rather than a generic SaaS or agency page.
+- **Colours:** Fulfillmen's own palette only — teal `#00A89C`, deep teal `#02353C` and mint `#EBF7F8` — on a **white** page. Sections alternate white and mint, with deep-teal panels for the photo inspection offer and the quote form.
+- **Header (Raze-style):** a floating dark-glass pill with a white logo, dot-separated section links, a glowing teal "f" mark in the centre and a glowing CTA. On mobile it collapses to the logo and the CTA.
+- **Footer (Raze-style):** dark, with the brand block, a CTA, link columns (this page, the real fulfillmen.com service pages, company pages, address) and a teal glow along the bottom edge. It lives in `templates/partials/footer.php`, so the thank-you page uses it too.
+- **Hero:** benchmarked against ShipBob, ShipMonk and Stord (bright split layout, real photography, floating product cards) instead of the current dark full-bleed photo on fulfillmen.com.
+  - Uses Fulfillmen's own team photo, with floating tracking, QC and landed-cost cards over it.
+  - Below it sit Fulfillmen's own platform logos and a KPI strip (7–15 days, 24 h quote, 2.5×, 20%).
+- **Path cards:** Fulfillmen's own photography — containers for FBA, sourcing for dropshipping and the warehouse for own stock.
+- **Logistics details from v3, recoloured:** the scroll-driven conveyor through Source → Inspect → Store → Ship, the photo inspection report with its APPROVED stamp, the tracking timeline, the comparison table and the numbered quote form.
+- **Type:** Archivo, the font fulfillmen.com already uses, plus JetBrains Mono for small data labels.
+- **Photos are editable** under Settings → Fulfillmen Landing → Photography. They default to images already on fulfillmen.com.
 
-| Section | Artifact | Motion |
-|---|---|---|
-| Hero | A real dotted world map (Natural Earth data), with routes from the Huizhou hub to the US, UK, EU, UAE, Singapore and Australia | Parcels travel each lane; the waybill tilts toward the cursor |
-| Hero card | A shipping label / waybill: 7–15 days, ship from Huizhou, QC passed, barcode | The "Ship to" destination cycles |
-| Below hero | An airport-style departure board of outbound lanes (labelled illustrative) | Split-flap rows flip |
-| Pick your path | Kraft cartons with tape, handling marks and FBA / DS / OB stickers | A SELECTED rubber stamp on click |
-| How it works | A conveyor line through Source → Inspect → Store → Ship | The carton rides the belt on scroll and gains a QC sticker, tape and a shipping label |
-| Offer B | A pre-shipment photo inspection report with polaroids | An APPROVED stamp slams down |
-| Proof | A manifest-style stats table, a carrier tracking timeline and a comparison table | Count-ups; milestones fill in |
-| Quote | A printed receipt of the quote lines, and the form laid out as a numbered waybill (01–05) | — |
-
-- **Type:** Archivo, which fulfillmen.com already uses, in its expanded industrial cut, plus JetBrains Mono for data labels.
-- **Colour:** brand teal #00A89C, harbour dark, manifest paper, kraft and signal amber.
-
-**Research behind it:**
-
-- **Fulfillment design leaders (ShipMonk, Stord, Flexport, ShipBob):** they win with product-specific visuals, network maps and big stat rows.
-- **The China-niche sites that rank (SendFromChina, ChinaDivision, NextSmartShip, Fulfillbot):** they use generic orange-and-blue stock-photo templates. None of them uses the trade's own visual language.
-
-The map data lives in `templates/partials/world-map-data.php`. It was generated once from world-atlas / Natural Earth (public domain) with d3-geo.
+The world map on the quote section comes from `templates/partials/world-map-data.php`, generated once from world-atlas / Natural Earth (public domain) with d3-geo.
 
 ## Install
 

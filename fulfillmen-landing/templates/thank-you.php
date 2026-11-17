@@ -18,12 +18,12 @@ $cal = $o['calendar_url'];
 ?>
 <div class="fm-lp fm-ty" data-fm-lp>
 	<section class="fm-hero fm-ty__hero">
-		<div class="fm-hero__glow" aria-hidden="true"></div>
+		<div class="fm-hero__bg" aria-hidden="true"></div>
 		<div class="fm-wrap fm-ty__in">
 			<div class="fm-ty__badge fm-rise" style="--d:0" aria-hidden="true">
 				<svg viewBox="0 0 80 80"><circle class="fm-ty__ring" cx="40" cy="40" r="34"/><path class="fm-ty__check" d="M25 41 L36 52 L56 30"/></svg>
 			</div>
-			<h1 class="fm-h1 fm-rise" style="--d:1"><span class="fm-ink">Your quote is on its way.</span> <span class="fm-mute">Expect it within 24 hours.</span></h1>
+			<h1 class="fm-h1 fm-rise" style="--d:1">Your quote is on its way. <span class="fm-hl">Expect it within 24 hours.</span></h1>
 			<p class="fm-hero__sub fm-rise" style="--d:2">
 				<?php if ( isset( $types[ $lt ] ) ) : ?>
 					We're pricing everything for you as an <b><?php echo esc_html( strtolower( $types[ $lt ] ) ); ?></b>: product cost, QC, prep, warehousing and shipping, line by line.
@@ -55,12 +55,6 @@ $cal = $o['calendar_url'];
 		</div>
 	</section>
 
-	<footer class="fm-foot">
-		<div class="fm-wrap fm-foot__in">
-			<p><?php echo fm_lp_icon( 'pin' ); // phpcs:ignore ?> Fulfillmen · <?php echo esc_html( $o['address'] ); ?></p>
-			<p>© <?php echo esc_html( gmdate( 'Y' ) ); ?> Fulfillmen</p>
-		</div>
-	</footer>
 </div>
 <?php
 $pixel = preg_replace( '/\D+/', '', $o['meta_pixel_id'] );

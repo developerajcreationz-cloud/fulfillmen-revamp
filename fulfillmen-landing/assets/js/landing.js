@@ -62,7 +62,7 @@
 		};
 		window.addEventListener('scroll', onScroll, { passive: true });
 		onScroll();
-		var links = $$('.fm-header__nav a');
+		var links = $$('.fm-nav__links a:not(.fm-nav__mark)');
 		if (links.length && 'IntersectionObserver' in window) {
 			var io = new IntersectionObserver(function (en) {
 				en.forEach(function (x) {
@@ -198,15 +198,16 @@
 	var hero = $('.fm-hero', root);
 	var quote = $('#quote');
 	if (sticky && hero && quote && 'IntersectionObserver' in window) {
-		var heroOut = false, quoteIn = false;
+		var heroOut = false, quoteIn = false, footIn = false, foot = document.querySelector(".fm-footer");
 		var upd = function () {
-			var on = heroOut && !quoteIn;
+			var on = heroOut && !quoteIn && !footIn;
 			sticky.classList.toggle('is-on', on);
 			sticky.setAttribute('aria-hidden', on ? 'false' : 'true');
 			$('a', sticky).tabIndex = on ? 0 : -1;
 		};
 		new IntersectionObserver(function (en) { heroOut = !en[0].isIntersecting; upd(); }).observe(hero);
 		new IntersectionObserver(function (en) { quoteIn = en[0].isIntersecting; upd(); }, { threshold: 0.1 }).observe(quote);
+		if (foot) new IntersectionObserver(function (en) { footIn = en[0].isIntersecting; upd(); }).observe(foot);
 	}
 
 	/* ---------- Lazy warehouse video ---------- */
@@ -282,25 +283,28 @@
 			new IntersectionObserver(function (en) { tweens.forEach(function (t) { if (en[0].isIntersecting) t.resume(); else t.pause(); }); }).observe(svg);
 		}
 	});
-	gsap.from('.fm-world--hero .fm-world__routes path', { opacity: 0, duration: 1.2, stagger: 0.12, delay: 0.5 });
-
-	/* Waybill tilts toward the cursor */
-	var waybill = $('[data-fm-waybill]');
-	if (waybill && fine && hero) {
-		var wx = gsap.quickTo(waybill, 'rotationY', { duration: 0.8, ease: 'power3' }), wy = gsap.quickTo(waybill, 'rotationX', { duration: 0.8, ease: 'power3' });
+	/* Hero: floating cards drift with the cursor (depth parallax) */
+	var media = $('[data-fm-media]');
+	if (media && fine && hero) {
+		var movers = $$('.fm-fc', media).map(function (c) {
+			var d = parseFloat(c.getAttribute('data-depth')) || 1;
+			return { x: gsap.quickTo(c, 'x', { duration: 1, ease: 'power3' }), y: gsap.quickTo(c, 'y', { duration: 1, ease: 'power3' }), d: d };
+		});
 		hero.addEventListener('pointermove', function (e) {
-			wx((e.clientX / window.innerWidth - 0.5) * 14);
-			wy((0.5 - e.clientY / window.innerHeight) * 10);
+			var cx = e.clientX / window.innerWidth - 0.5, cy = e.clientY / window.innerHeight - 0.5;
+			movers.forEach(function (m) { m.x(cx * 22 * m.d); m.y(cy * 18 * m.d); });
 		});
 	}
 
 	/* Count-up */
-	function countUp(el) {
+	function countUp(el, delay) {
 		var end = parseFloat(el.getAttribute('data-fm-count'));
 		if (isNaN(end)) return;
 		var dec = parseInt(el.getAttribute('data-fm-dec') || '0', 10), o = { v: 0 };
-		gsap.to(o, { v: end, duration: 1.8, ease: 'power3.out', onUpdate: function () { el.textContent = o.v.toFixed(dec); } });
+		gsap.to(o, { v: end, duration: 1.8, delay: delay || 0, ease: 'power3.out', onUpdate: function () { el.textContent = o.v.toFixed(dec); } });
 	}
+	$$('.fm-fc--cost [data-fm-count], .fm-kpis [data-fm-count]').forEach(function (el) { countUp(el, 0.9); });
+	gsap.from('.fm-fc', { autoAlpha: 0, y: 24, scale: 0.92, duration: 0.8, ease: 'back.out(1.6)', stagger: 0.18, delay: 0.7, clearProps: 'transform' });
 
 	/* Magnetic CTAs */
 	if (fine) {
